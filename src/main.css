@@ -1,0 +1,148 @@
+/* Global styles - Theme, font, utilities, animations and global components */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300..1000;1,300..1000&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta Fazenda Encantada / RPG Acolhedor */
+    /* Fundo creme #F5F0E8 = 38 31% 94% */
+    --background: 38 31% 94%;
+    /* Texto marrom profundo #3E2723 = 11 28% 19% */
+    --foreground: 11 28% 19%;
+
+    /* Card creme quente #FFF9F0 = 36 100% 97% */
+    --card: 36 100% 97%;
+    --card-foreground: 11 28% 19%;
+
+    --popover: 36 100% 97%;
+    --popover-foreground: 11 28% 19%;
+
+    /* Primária verde-folha #8BC34A = 88 50% 53% */
+    --primary: 88 50% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Secundária laranja quente #FFB74D = 36 100% 65% */
+    --secondary: 36 100% 65%;
+    --secondary-foreground: 11 28% 19%;
+
+    /* Muted marrom suave */
+    --muted: 36 25% 90%;
+    --muted-foreground: 16 19% 38%;
+
+    /* Accent roxo mágico #5E35B1 = 260 54% 45% */
+    --accent: 260 54% 45%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 36 20% 86%;
+    --input: 36 20% 86%;
+    --ring: 88 50% 53%;
+
+    --radius: 1.25rem; /* 20px */
+  }
+
+  body {
+    font-family:
+      'Nunito',
+      system-ui,
+      -apple-system,
+      sans-serif;
+    background-color: #f5f0e8;
+    color: #3e2723;
+    overflow-x: hidden;
+  }
+
+  /* Suavização de fontes e números tabulares para scores/moedas */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  section[aria-label='Notifications alt+T'] {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}
+
+@layer utilities {
+  /* Animações fluidas do Hub e jogos */
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-8px) rotate(2deg);
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 15px rgba(139, 195, 74, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(139, 195, 74, 0.7);
+    }
+  }
+
+  @keyframes conveyor-move {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 40px 0;
+    }
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-20px) rotate(0deg) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg) scale(0.6);
+      opacity: 0;
+    }
+  }
+
+  @keyframes coin-fly {
+    0% {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.3) translateY(-25px);
+      opacity: 0.9;
+    }
+    100% {
+      transform: scale(0.6) translateY(-60px);
+      opacity: 0;
+    }
+  }
+
+  .animate-float-slow {
+    animation: float-slow 4s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-conveyor {
+    animation: conveyor-move 1.5s linear infinite;
+  }
+
+  .animate-confetti {
+    animation: confetti-fall 3.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .animate-coin-fly {
+    animation: coin-fly 0.8s ease-out forwards;
+  }
+}
