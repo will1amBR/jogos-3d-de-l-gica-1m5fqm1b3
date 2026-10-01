@@ -34,8 +34,8 @@ export const Navbar: React.FC = () => {
     { name: 'Jornada RPG', path: '/jornada', icon: Sparkles },
     { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
     { name: 'Conquistas', path: '/conquistas', icon: Sparkles },
-    { name: 'Fábrica', path: '/fabrica', icon: FlaskConical },
-    { name: 'Tetris 3D', path: '/tetris', icon: Layers },
+    { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
+    { name: 'Tetris (2D/3D)', path: '/tetris', icon: Layers },
   ]
 
   const handleLogout = () => {

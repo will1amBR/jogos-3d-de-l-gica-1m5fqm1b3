@@ -76,28 +76,113 @@ export default function Jornada() {
           </div>
         </div>
 
-        {/* Illustrated World Map Canvas / Graphic Area */}
-        <div className="relative overflow-hidden rounded-3xl border-4 border-[#8BC34A]/40 bg-gradient-to-br from-[#E8F5E9] via-[#FFF9C4] to-[#C8E6C9] p-6 sm:p-10 shadow-lg min-h-[380px] sm:min-h-[460px]">
+        {/* Responsive World Map Area: Path Timeline on mobile, 2D RPG Map on Desktop */}
+        <div className="relative overflow-hidden rounded-3xl border-4 border-[#8BC34A]/40 bg-gradient-to-br from-[#E8F5E9] via-[#FFF9C4] to-[#C8E6C9] p-4 sm:p-8 shadow-lg">
           {/* Subtle Map Compass background decoration */}
           <div className="absolute top-4 right-4 opacity-15 pointer-events-none">
             <Compass className="w-48 h-48 text-[#2E7D32]" />
           </div>
 
-          {/* SVG Connection Path between Places */}
-          <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
-            <path
-              d="M 12% 78% Q 20% 70%, 28% 62% T 42% 75% T 38% 38% T 58% 48% T 74% 32% T 72% 70% T 88% 52%"
-              fill="none"
-              stroke="#8D6E63"
-              strokeWidth="4"
-              strokeDasharray="8 8"
-              opacity="0.6"
-            />
-          </svg>
+          {/* MOBILE VIEW (< md): Clean linear RPG path so pins and names NEVER overlap */}
+          <div className="block md:hidden relative z-10 py-2">
+            <div className="text-xs font-black uppercase text-[#2E7D32] mb-3 flex items-center gap-1.5 px-1">
+              <MapPin className="w-4 h-4 text-[#8BC34A]" /> Trilha de Territórios do Reino
+            </div>
+            <div className="space-y-3">
+              {STORY_PLACES.map((place, idx) => {
+                const isUnlocked = currentLevel >= place.requiredLevel
+                const isVisited = visitedPlaces[place.id]
+                const isSelected = selectedPlace?.id === place.id
 
-          {/* Map Node Pins */}
-          <div className="relative z-10 w-full h-full min-h-[340px] sm:min-h-[400px]">
-            {STORY_PLACES.map((place, idx) => {
+                return (
+                  <div
+                    key={place.id}
+                    onClick={() => handlePlaceClick(place)}
+                    className={`relative p-3.5 rounded-2xl border-2 transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 ${
+                      isSelected
+                        ? 'border-[#FF9800] bg-white shadow-md ring-2 ring-[#FF9800]/40 scale-[1.02]'
+                        : isVisited
+                          ? 'border-[#8BC34A] bg-white/90 hover:bg-white'
+                          : isUnlocked
+                            ? 'border-amber-300 bg-amber-50/90 hover:bg-white'
+                            : 'border-stone-300 bg-stone-100/80 opacity-75'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      {/* Step Number + Icon */}
+                      <div
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0 shadow-sm transition-transform ${
+                          isSelected ? 'scale-105' : ''
+                        } ${
+                          isVisited
+                            ? 'bg-[#8BC34A] text-white border-2 border-white'
+                            : isUnlocked
+                              ? 'bg-[#FFB74D] text-[#3E2723] border-2 border-white animate-pulse'
+                              : 'bg-stone-200 text-stone-500 border border-stone-300'
+                        }`}
+                      >
+                        {isUnlocked ? place.icon : <Lock className="w-5 h-5" />}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-black text-[#3E2723] truncate">
+                            {place.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span
+                            className={`text-[11px] font-black px-2 py-0.5 rounded-full ${
+                              isVisited
+                                ? 'bg-emerald-100 text-[#2E7D32]'
+                                : isUnlocked
+                                  ? 'bg-amber-100 text-[#E65100]'
+                                  : 'bg-stone-200 text-stone-600'
+                            }`}
+                          >
+                            {isVisited
+                              ? '✓ Concluído'
+                              : isUnlocked
+                                ? '⭐ Desbloqueado!'
+                                : `Nível ${place.requiredLevel}`}
+                          </span>
+                          <span className="text-[11px] font-bold text-[#795548] hidden xs:inline">
+                            🪙 +{place.rewardCoins}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex items-center gap-1 text-[#8BC34A]">
+                      {isSelected ? (
+                        <span className="text-xs font-black text-[#FF9800] bg-orange-50 px-2 py-1 rounded-xl">
+                          Selecionado
+                        </span>
+                      ) : (
+                        <ChevronRight className="w-5 h-5 text-[#8D6E63]" />
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* DESKTOP VIEW (>= md): Expansive 2D coordinate map with connector SVG */}
+          <div className="hidden md:block relative z-10 w-full min-h-[460px]">
+            {/* SVG Connection Path */}
+            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+              <path
+                d="M 12% 78% Q 20% 70%, 28% 62% T 42% 75% T 38% 38% T 58% 48% T 74% 32% T 72% 70% T 88% 52%"
+                fill="none"
+                stroke="#8D6E63"
+                strokeWidth="4"
+                strokeDasharray="8 8"
+                opacity="0.6"
+              />
+            </svg>
+
+            {STORY_PLACES.map((place) => {
               const isUnlocked = currentLevel >= place.requiredLevel
               const isVisited = visitedPlaces[place.id]
               const isSelected = selectedPlace?.id === place.id
@@ -109,13 +194,13 @@ export default function Jornada() {
                     left: `${place.position.x}%`,
                     top: `${place.position.y}%`,
                   }}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer"
+                  className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center group cursor-pointer z-10"
                   onClick={() => handlePlaceClick(place)}
                 >
                   {/* Pin Circle */}
                   <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300 shadow-md ${
-                      isSelected ? 'ring-4 ring-[#FF9800] scale-110' : ''
+                    className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl transition-all duration-300 shadow-md ${
+                      isSelected ? 'ring-4 ring-[#FF9800] scale-110' : 'group-hover:scale-105'
                     } ${
                       isVisited
                         ? 'bg-[#8BC34A] text-white border-2 border-white'
@@ -128,8 +213,8 @@ export default function Jornada() {
                   </div>
 
                   {/* Place Name Tag */}
-                  <div className="mt-1.5 px-2.5 py-0.5 rounded-full bg-white/95 backdrop-blur-sm border border-[#3E2723]/20 shadow-sm text-center whitespace-nowrap">
-                    <span className="text-[11px] font-black text-[#3E2723] block leading-tight">
+                  <div className="mt-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm border border-[#3E2723]/20 shadow-md text-center max-w-[160px]">
+                    <span className="text-[11px] font-black text-[#3E2723] block leading-tight truncate">
                       {place.name}
                     </span>
                     <span

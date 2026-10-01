@@ -295,8 +295,9 @@ export default function Fazenda() {
           {/* Action Bar Pills */}
           <div className="flex flex-wrap items-center gap-2">
             <Button
+              type="button"
               onClick={() => setOrdersOpen(true)}
-              className="bg-[#FF9800] hover:bg-[#F57C00] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 relative"
+              className="bg-[#FF9800] hover:bg-[#F57C00] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 relative transition-transform active:scale-95"
             >
               <PackageCheck className="w-4 h-4 mr-1.5" />
               Pedidos ({customerOrders.length})
@@ -308,8 +309,9 @@ export default function Fazenda() {
             </Button>
 
             <Button
+              type="button"
               onClick={() => setBakeryOpen(true)}
-              className="bg-[#D84315] hover:bg-[#BF360C] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11"
+              className="bg-[#D84315] hover:bg-[#BF360C] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 transition-transform active:scale-95"
             >
               <Flame className="w-4 h-4 mr-1.5" />
               Forno de Pão {bakeryLevel > 0 ? `(Nível ${bakeryLevel})` : '(Bloqueado)'}
@@ -317,8 +319,9 @@ export default function Fazenda() {
 
             <Link to="/melhorias">
               <Button
+                type="button"
                 variant="outline"
-                className="border-2 border-[#8BC34A] text-[#2E7D32] hover:bg-green-50 font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11"
+                className="border-2 border-[#8BC34A] text-[#2E7D32] hover:bg-green-50 font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 transition-transform active:scale-95"
               >
                 <Wrench className="w-4 h-4 mr-1.5" />
                 Melhorias
@@ -326,8 +329,9 @@ export default function Fazenda() {
             </Link>
 
             <Button
+              type="button"
               onClick={() => setMarketOpen(true)}
-              className="bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11"
+              className="bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 transition-transform active:scale-95"
             >
               <Store className="w-4 h-4 mr-1.5" />
               Mercado ({dailyMultiplier.toFixed(2)}x)

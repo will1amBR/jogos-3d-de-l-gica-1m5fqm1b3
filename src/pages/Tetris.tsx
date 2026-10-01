@@ -13,11 +13,14 @@ import {
   ArrowUp,
   ArrowRight as ArrowRightIcon,
   ArrowLeft as ArrowLeftIcon,
+  Grid3X3,
+  Box,
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AuthGate } from '@/components/AuthGate'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
+import { ClassicTetris } from '@/components/ClassicTetris'
 
 // Arena 4x4x8 (X: 0..3, Z: 0..3, Y: 0..7)
 const ARENA_X = 4
@@ -87,7 +90,8 @@ type VoxelGrid = (string | null)[][][] // [y][x][z]
 export default function Tetris() {
   const { addReward, addQuestProgress } = useGame()
 
-  const [gameState, setGameState] = useState<'idle' | 'playing' | 'gameover'>('idle')
+  const [gameMode, setGameMode] = useState<'classic' | '3d'>('classic')
+  const [gameState3D, setGameState3D] = useState<'idle' | 'playing' | 'gameover'>('idle')
   const [score, setScore] = useState(0)
   const [clearedLayers, setClearedLayers] = useState(0)
   const [combo, setCombo] = useState(1)
@@ -161,7 +165,7 @@ export default function Tetris() {
     setScore(0)
     setClearedLayers(0)
     setCombo(1)
-    setGameState('playing')
+    setGameState3D('playing')
     spawnPiece()
     lastFallRef.current = Date.now()
   }
@@ -244,7 +248,7 @@ export default function Tetris() {
 
     const spawned = spawnPiece()
     if (!spawned) {
-      setGameState('gameover')
+      setGameState3D('gameover')
       toast({
         title: 'Fim de Jogo! 🧱',
         description: 'Os blocos atingiram o topo da arena 3D!',
@@ -255,7 +259,7 @@ export default function Tetris() {
 
   // Drop / Move controls
   const movePiece = (dx: number, dz: number) => {
-    if (gameState !== 'playing') return
+    if (gameMode !== '3d' || gameState3D !== 'playing') return
     const nextPos = {
       x: piecePosRef.current.x + dx,
       y: piecePosRef.current.y,
@@ -267,7 +271,7 @@ export default function Tetris() {
   }
 
   const dropOneStep = useCallback(() => {
-    if (gameState !== 'playing') return
+    if (gameMode !== '3d' || gameState3D !== 'playing') return
     const nextPos = {
       x: piecePosRef.current.x,
       y: piecePosRef.current.y - 1,
@@ -279,10 +283,10 @@ export default function Tetris() {
     } else {
       lockPiece()
     }
-  }, [gameState, lockPiece])
+  }, [gameMode, gameState3D, lockPiece])
 
   const hardDrop = () => {
-    if (gameState !== 'playing') return
+    if (gameMode !== '3d' || gameState3D !== 'playing') return
     let currentY = piecePosRef.current.y
     while (
       canPlace(
@@ -303,7 +307,7 @@ export default function Tetris() {
 
   // 3-Axis Rotations: X, Y, Z
   const rotatePiece = (axis: 'x' | 'y' | 'z') => {
-    if (gameState !== 'playing') return
+    if (gameMode !== '3d' || gameState3D !== 'playing') return
 
     const rotated = pieceVoxelsRef.current.map(([vx, vy, vz]) => {
       if (axis === 'y') {
@@ -326,7 +330,7 @@ export default function Tetris() {
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameState !== 'playing') return
+      if (gameMode !== '3d' || gameState3D !== 'playing') return
 
       switch (e.key.toLowerCase()) {
         case 'arrowleft':
@@ -362,10 +366,11 @@ export default function Tetris() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [gameState, dropOneStep])
+  }, [gameMode, gameState3D, dropOneStep])
 
   // Game loop & 3D Canvas rendering
   useEffect(() => {
+    if (gameMode !== '3d') return
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
@@ -379,7 +384,7 @@ export default function Tetris() {
       const h = canvas.height
 
       // Gravity step
-      if (gameState === 'playing' && now - lastFallRef.current > 1100) {
+      if (gameState3D === 'playing' && now - lastFallRef.current > 1100) {
         lastFallRef.current = now
         dropOneStep()
       }
@@ -394,7 +399,7 @@ export default function Tetris() {
       ctx.fillRect(0, 0, w, h)
 
       // Orbit camera rotation
-      if (!isDraggingRef.current && gameState === 'playing') {
+      if (!isDraggingRef.current && gameState3D === 'playing') {
         orbitAngleRef.current += 0.003
       }
       const angle = orbitAngleRef.current
@@ -501,7 +506,7 @@ export default function Tetris() {
       }
 
       // Active falling piece voxels
-      if (gameState === 'playing') {
+      if (gameState3D === 'playing') {
         const pos = piecePosRef.current
         for (const [vx, vy, vz] of pieceVoxelsRef.current) {
           const gx = pos.x + vx
@@ -598,11 +603,11 @@ export default function Tetris() {
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [gameState, dropOneStep])
+  }, [gameMode, gameState3D, dropOneStep])
 
   return (
     <AuthGate>
-      <div className="space-y-6 pb-12">
+      <div className="space-y-6 pb-12 animate-fade-in">
         {/* Navigation & Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -617,162 +622,217 @@ export default function Tetris() {
             </Link>
             <div>
               <h1 className="text-2xl sm:text-3xl font-black text-[#3E2723] flex items-center gap-2">
-                <Layers className="w-7 h-7 text-[#5E35B1]" /> Tetris 3D
+                <Layers className="w-7 h-7 text-[#5E35B1]" /> Tetris • Clássico & 3D
               </h1>
               <p className="text-xs sm:text-sm text-[#795548] font-bold">
-                Empilhe cuboides numa arena 4x4x8 e limpe camadas inteiras para pontuar!
+                Jogue o clássico tradicional 2D (10x20) ou aventure-se na arena tridimensional!
               </p>
             </div>
           </div>
 
-          {/* Stats Bar */}
-          <div className="flex items-center gap-3">
-            <div className="bg-[#FFF9F0] border border-[#3E2723]/10 px-4 py-2 rounded-2xl flex items-center gap-4 shadow-sm">
+          {/* Mode Switcher Pill */}
+          <div className="flex items-center bg-[#F5EFE6] p-1.5 rounded-2xl border border-[#3E2723]/10">
+            <button
+              type="button"
+              onClick={() => setGameMode('classic')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all ${
+                gameMode === 'classic'
+                  ? 'bg-[#8BC34A] text-white shadow-sm'
+                  : 'text-[#3E2723] hover:text-[#2E7D32]'
+              }`}
+            >
+              <Grid3X3 className="w-4 h-4" />
+              Clássico 2D
+            </button>
+            <button
+              type="button"
+              onClick={() => setGameMode('3d')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all ${
+                gameMode === '3d'
+                  ? 'bg-[#5E35B1] text-white shadow-sm'
+                  : 'text-[#3E2723] hover:text-[#5E35B1]'
+              }`}
+            >
+              <Box className="w-4 h-4" />
+              Tetris 3D
+            </button>
+          </div>
+        </div>
+
+        {/* MODE 1: CLASSIC 2D (RECOMMENDED FOR MOBILE) */}
+        {gameMode === 'classic' && (
+          <ClassicTetris
+            onReward={(xp, coins, reason) => addReward(xp, coins, reason)}
+            onQuestProgress={(type, count) => addQuestProgress(type, count)}
+          />
+        )}
+
+        {/* MODE 2: TETRIS 3D (POLISHED CONTROLS WITH NO OVERLAPS) */}
+        {gameMode === '3d' && (
+          <div className="space-y-6 animate-fade-in">
+            {/* Stats Bar */}
+            <div className="flex items-center justify-between bg-[#FFF9F0] border-2 border-[#3E2723]/10 px-5 py-3 rounded-2xl shadow-sm">
               <div>
-                <div className="text-[10px] font-black uppercase text-[#795548]">Pontuação</div>
-                <div className="text-xl font-black text-[#5E35B1] tabular-nums">{score}</div>
+                <div className="text-[10px] font-black uppercase text-[#795548]">Arena 3D</div>
+                <div className="text-base font-black text-[#5E35B1]">4x4x8 Cubos</div>
               </div>
-              <div className="w-[1px] h-6 bg-[#3E2723]/10" />
-              <div>
-                <div className="text-[10px] font-black uppercase text-[#795548]">Camadas</div>
-                <div className="text-xl font-black text-[#2E7D32] tabular-nums">
-                  {clearedLayers}
+              <div className="flex items-center gap-4">
+                <div>
+                  <div className="text-[10px] font-black uppercase text-[#795548]">Pontuação</div>
+                  <div className="text-lg font-black text-[#5E35B1] tabular-nums">{score}</div>
+                </div>
+                <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                <div>
+                  <div className="text-[10px] font-black uppercase text-[#795548]">Camadas</div>
+                  <div className="text-lg font-black text-[#2E7D32] tabular-nums">
+                    {clearedLayers}
+                  </div>
+                </div>
+                <div className="w-[1px] h-6 bg-[#3E2723]/10" />
+                <div>
+                  <div className="text-[10px] font-black uppercase text-[#795548]">Combo</div>
+                  <div className="text-lg font-black text-[#E65100]">x{combo}</div>
                 </div>
               </div>
-              <div className="w-[1px] h-6 bg-[#3E2723]/10" />
-              <div>
-                <div className="text-[10px] font-black uppercase text-[#795548]">Combo</div>
-                <div className="text-xl font-black text-[#E65100]">x{combo}</div>
+            </div>
+
+            {/* 3D Canvas Area */}
+            <div className="relative rounded-3xl overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl bg-[#0F081D]">
+              <canvas
+                ref={canvasRef}
+                width={800}
+                height={500}
+                className="w-full h-[380px] sm:h-[480px] block cursor-grab active:cursor-grabbing touch-none"
+              />
+
+              {/* Orbit hint label */}
+              <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 backdrop-blur-xs rounded-xl text-white text-[11px] font-bold pointer-events-none">
+                🖱️ Arraste para orbitar a câmera 3D
+              </div>
+
+              {/* Idle Overlay */}
+              {gameState3D === 'idle' && (
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                  <Layers className="w-16 h-16 text-[#BA68C8] mb-3 animate-bounce" />
+                  <h2 className="text-3xl font-black text-white mb-2">Desafio Espacial 3D</h2>
+                  <p className="text-sm text-gray-200 max-w-md mb-6 font-bold">
+                    Mova peças nos eixos X e Z, rotacione em 3 eixos espaciais e complete camadas
+                    4x4 para ganhar moedas e XP!
+                  </p>
+                  <Button
+                    onClick={startGame}
+                    className="bg-[#5E35B1] hover:bg-[#512DA8] text-white font-black text-lg py-6 px-8 rounded-2xl shadow-xl transition-transform active:scale-95"
+                  >
+                    <Play className="w-6 h-6 mr-2 fill-white" /> Iniciar Tetris 3D
+                  </Button>
+                </div>
+              )}
+
+              {/* Game Over Overlay */}
+              {gameState3D === 'gameover' && (
+                <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center animate-fade-in">
+                  <Trophy className="w-16 h-16 text-[#FFD54F] mb-3 animate-bounce" />
+                  <h2 className="text-3xl font-black text-white mb-1">Partida Encerrada!</h2>
+                  <p className="text-sm text-gray-200 mb-6 font-bold">
+                    Você limpou {clearedLayers} camada(s) e alcançou {score} pontos!
+                  </p>
+                  <Button
+                    onClick={startGame}
+                    className="bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black py-5 px-8 rounded-2xl shadow-xl"
+                  >
+                    <RotateCcw className="w-5 h-5 mr-2" /> Jogar Novamente
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* On-screen controls 3D - Fixed Grid without overlapping buttons */}
+            <div className="bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-4 sm:p-5 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black uppercase text-[#795548] tracking-wider">
+                  Controles da Arena 3D
+                </span>
+                <span className="text-xs text-[#795548] font-bold hidden sm:block">
+                  Teclado: W/A/S/D para mover • Q/E para girar • Espaço para soltar
+                </span>
+              </div>
+
+              {/* Directional controls row */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => movePiece(-1, 0)}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100 flex items-center justify-center gap-1.5"
+                >
+                  <ArrowLeftIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Esquerda (A)</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => movePiece(1, 0)}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100 flex items-center justify-center gap-1.5"
+                >
+                  <ArrowRightIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Direita (D)</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => movePiece(0, -1)}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100 flex items-center justify-center gap-1.5"
+                >
+                  <ArrowUp className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Fundo (W)</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => movePiece(0, 1)}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100 flex items-center justify-center gap-1.5"
+                >
+                  <ArrowDown className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Frente (S)</span>
+                </Button>
+              </div>
+
+              {/* Rotations and drop row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => rotatePiece('y')}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#5E35B1]/30 bg-purple-50 text-[#5E35B1] hover:bg-purple-100 flex items-center justify-center gap-1.5"
+                >
+                  <RotateCw className="w-4 h-4 shrink-0" />
+                  <span>Girar Y (Q)</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  onClick={() => rotatePiece('x')}
+                  disabled={gameState3D !== 'playing'}
+                  className="rounded-2xl h-12 font-black border-[#5E35B1]/30 bg-purple-50 text-[#5E35B1] hover:bg-purple-100 flex items-center justify-center gap-1.5"
+                >
+                  <RotateCw className="w-4 h-4 shrink-0" />
+                  <span>Girar X (E)</span>
+                </Button>
+
+                <Button
+                  onClick={hardDrop}
+                  disabled={gameState3D !== 'playing'}
+                  className="bg-[#FF9800] hover:bg-[#F57C00] text-white font-black rounded-2xl h-12 shadow-sm text-xs flex items-center justify-center gap-1.5"
+                >
+                  ⚡ Soltar Peça (Espaço)
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-
-        {/* 3D Canvas Area */}
-        <div className="relative rounded-3xl overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl bg-[#0F081D]">
-          <canvas
-            ref={canvasRef}
-            width={800}
-            height={500}
-            className="w-full h-[400px] sm:h-[500px] block cursor-grab active:cursor-grabbing touch-none"
-          />
-
-          {/* Orbit hint label */}
-          <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 backdrop-blur-xs rounded-xl text-white text-[11px] font-bold pointer-events-none">
-            🖱️ Clique e arraste para orbitar a câmera 3D
-          </div>
-
-          {/* Idle Overlay */}
-          {gameState === 'idle' && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center animate-fade-in">
-              <Layers className="w-16 h-16 text-[#BA68C8] mb-3 animate-bounce" />
-              <h2 className="text-3xl font-black text-white mb-2">Desafio Espacial 3D</h2>
-              <p className="text-sm text-gray-200 max-w-md mb-6 font-bold">
-                Mova peças nos eixos X e Z, rotacione em 3 eixos espaciais e complete camadas 4x4
-                para ganhar moedas e XP!
-              </p>
-              <Button
-                onClick={startGame}
-                className="bg-[#5E35B1] hover:bg-[#512DA8] text-white font-black text-lg py-6 px-8 rounded-2xl shadow-xl transition-transform active:scale-95"
-              >
-                <Play className="w-6 h-6 mr-2 fill-white" /> Iniciar Tetris 3D
-              </Button>
-            </div>
-          )}
-
-          {/* Game Over Overlay */}
-          {gameState === 'gameover' && (
-            <div className="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center animate-fade-in">
-              <Trophy className="w-16 h-16 text-[#FFD54F] mb-3 animate-bounce" />
-              <h2 className="text-3xl font-black text-white mb-1">Partida Encerrada!</h2>
-              <p className="text-sm text-gray-200 mb-6 font-bold">
-                Você limpou {clearedLayers} camada(s) e alcançou {score} pontos!
-              </p>
-              <Button
-                onClick={startGame}
-                className="bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black py-5 px-8 rounded-2xl shadow-xl"
-              >
-                <RotateCcw className="w-5 h-5 mr-2" /> Jogar Novamente
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* On-screen controls (Mobile & Desktop accessibility) */}
-        <div className="bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-black uppercase text-[#795548] tracking-wider">
-              Controles Interativos (Toque na Tela ou Use Teclado)
-            </span>
-            <span className="text-xs text-[#795548] font-bold hidden sm:block">
-              Teclas: Q/E/R para girar • W/A/S/D para mover • Espaço para queda instantânea
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {/* Directional Moves */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => movePiece(-1, 0)}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100"
-              >
-                <ArrowLeftIcon className="w-5 h-5" /> Esquerda (A)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => movePiece(1, 0)}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100"
-              >
-                <ArrowRightIcon className="w-5 h-5" /> Direita (D)
-              </Button>
-            </div>
-
-            {/* Depth Moves */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => movePiece(0, -1)}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100"
-              >
-                <ArrowUp className="w-5 h-5" /> Fundo (W)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => movePiece(0, 1)}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-amber-100"
-              >
-                <ArrowDown className="w-5 h-5" /> Frente (S)
-              </Button>
-            </div>
-
-            {/* 3D Rotations */}
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => rotatePiece('y')}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-purple-100 text-[#5E35B1]"
-              >
-                <RotateCw className="w-4 h-4 mr-1" /> Girar Y (Q)
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => rotatePiece('x')}
-                className="flex-1 rounded-2xl h-12 font-black border-[#3E2723]/20 hover:bg-purple-100 text-[#5E35B1]"
-              >
-                <RotateCw className="w-4 h-4 mr-1" /> Girar X (E)
-              </Button>
-            </div>
-
-            {/* Hard Drop */}
-            <Button
-              onClick={hardDrop}
-              className="bg-[#FFB74D] hover:bg-[#FFA726] text-[#3E2723] font-black rounded-2xl h-12 shadow-sm text-sm"
-            >
-              ⚡ Soltar Peça (Espaço)
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </AuthGate>
   )

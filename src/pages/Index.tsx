@@ -66,27 +66,27 @@ export default function Index() {
     },
     {
       id: 'fabrica',
-      title: 'Fábrica de Garrafas',
+      title: 'Jogo das Garrafas',
       type: 'bottle' as const,
       route: '/fabrica',
       icon: FlaskConical,
       description:
-        'Desafie sua atenção e raciocínio rápido enchendo frascos no ponto exato segundo as regras de cada lote.',
-      tags: ['Lógica', 'Precisão', 'Reflexo'],
+        '8 garrafinhas de 6 andares na prateleira: preencha o garrafão com uma única cor e ordene as garrafinhas.',
+      tags: ['Lógica', 'Prateleira 3D', 'Water Sort'],
       badgeColor: 'bg-cyan-100 text-cyan-800',
-      actionText: 'Trabalhar na Fábrica',
+      actionText: 'Jogar Garrafas',
     },
     {
       id: 'tetris',
-      title: 'Tetris 3D',
+      title: 'Tetris • 2D Clássico & 3D',
       type: 'tetris' as const,
       route: '/tetris',
       icon: Layers,
       description:
-        'Encaixe blocos tridimensionais numa arena espacial 4x4x8 com rotação em 3 eixos e combos de camadas.',
-      tags: ['Espacial', 'Cérebro', 'Estratégia'],
+        'Jogue o Tetris tradicional 2D com controles de toque confortáveis ou encare o desafio na arena 3D!',
+      tags: ['2D Clássico', 'Espacial 3D', 'Combos'],
       badgeColor: 'bg-purple-100 text-purple-800',
-      actionText: 'Empilhar Blocos 3D',
+      actionText: 'Jogar Tetris',
     },
   ]
 
