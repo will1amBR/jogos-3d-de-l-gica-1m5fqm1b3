@@ -2,10 +2,11 @@ import React from 'react'
 import { Outlet } from 'react-router-dom'
 import { Navbar, Footer } from './Navigation'
 import { LevelUpModal } from './LevelUpModal'
+import { StoryModal } from './StoryModal'
 import { useGame } from '@/context/GameContext'
 
 export default function Layout() {
-  const { levelUpModal, closeLevelUpModal } = useGame()
+  const { levelUpModal, closeLevelUpModal, storyModal, closeStoryModal } = useGame()
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F0E8] text-[#3E2723] antialiased selection:bg-[#8BC34A] selection:text-white">
@@ -22,6 +23,16 @@ export default function Layout() {
           level={levelUpModal.newLevel}
           bonusCoins={levelUpModal.bonusCoins}
           onClose={closeLevelUpModal}
+        />
+      )}
+
+      {storyModal && (
+        <StoryModal
+          place={storyModal.place}
+          rewardCoins={storyModal.rewardCoins}
+          rewardXp={storyModal.rewardXp}
+          isFirstVisit={storyModal.isFirstVisit}
+          onClose={closeStoryModal}
         />
       )}
     </div>

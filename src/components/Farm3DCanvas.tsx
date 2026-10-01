@@ -14,6 +14,8 @@ interface Farm3DCanvasProps {
   unlockedCount: number
   selectedSeed: CropType
   dailyMultiplier: number
+  workersCount: number
+  hasBakery: boolean
   onPlotClick: (plotIndex: number) => void
 }
 
@@ -22,6 +24,8 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
   unlockedCount,
   selectedSeed,
   dailyMultiplier,
+  workersCount,
+  hasBakery,
   onPlotClick,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -38,7 +42,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
     if (!ctx) return
 
     let animId: number
-    let stallAngle = 0
+    let time = 0
 
     // Isometric projection helper
     // 6 columns x 4 rows max (up to 24 plots)
@@ -56,25 +60,76 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
     }
 
     const render = () => {
-      stallAngle += 0.02
+      time += 0.03
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Background pastoral hill tone
+      // Background pastoral hill gradient (warm green Township style)
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
       gradient.addColorStop(0, '#E8F5E9')
       gradient.addColorStop(1, '#C8E6C9')
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Draw subtle decorative terrain borders
+      // Main field lawn island
       ctx.fillStyle = '#A5D6A7'
       ctx.beginPath()
-      ctx.ellipse(originX, originY + 120, 360, 190, 0, 0, Math.PI * 2)
+      ctx.ellipse(originX, originY + 120, 370, 200, 0, 0, Math.PI * 2)
       ctx.fill()
 
       const now = Date.now()
 
-      // 1. Draw 3D Market Stall in the top right corner
+      // 1. Draw Bakery Oven building (top-left if unlocked)
+      ctx.save()
+      const bakeryX = 120
+      const bakeryY = 110
+      ctx.translate(bakeryX, bakeryY)
+
+      if (hasBakery) {
+        // Stone base
+        ctx.fillStyle = '#795548'
+        ctx.fillRect(-35, -5, 70, 40)
+        // Red brick roof/dome
+        ctx.beginPath()
+        ctx.arc(0, -5, 34, Math.PI, 0)
+        ctx.fillStyle = '#D84315'
+        ctx.fill()
+        // Chimney
+        ctx.fillStyle = '#4E342E'
+        ctx.fillRect(16, -42, 10, 24)
+        // Smoke puffs
+        for (let s = 0; s < 3; s++) {
+          const smokeY = -48 - s * 12 - ((time * 15 + s * 10) % 25)
+          const smokeX = 21 + Math.sin(time * 2 + s) * 6
+          ctx.beginPath()
+          ctx.arc(smokeX, smokeY, 4 + s * 2, 0, Math.PI * 2)
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.6)'
+          ctx.fill()
+        }
+        // Oven mouth glow
+        ctx.fillStyle = '#FF6F00'
+        ctx.beginPath()
+        ctx.arc(0, 18, 12, Math.PI, 0)
+        ctx.fill()
+        // Bread icon label
+        ctx.fillStyle = '#3E2723'
+        ctx.font = 'bold 11px Nunito, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('FORNO 🥖', 0, 50)
+      } else {
+        // Wooden construction outline
+        ctx.strokeStyle = '#8D6E63'
+        ctx.lineWidth = 2
+        ctx.setLineDash([4, 4])
+        ctx.strokeRect(-30, 0, 60, 35)
+        ctx.setLineDash([])
+        ctx.fillStyle = '#8D6E63'
+        ctx.font = 'bold 10px Nunito, sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('FORNO (Loja)', 0, 22)
+      }
+      ctx.restore()
+
+      // 2. Draw 3D Market Stall in the top right corner
       ctx.save()
       const stallX = canvas.width - 120
       const stallY = 110
@@ -86,7 +141,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       ctx.fillStyle = '#6D4C41'
       ctx.fillRect(-42, 5, 84, 35)
 
-      // Stall Awning stripes (red & white/gold)
+      // Stall Awning stripes (red & gold)
       ctx.beginPath()
       ctx.moveTo(-52, -22)
       ctx.lineTo(52, -22)
@@ -96,8 +151,8 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       ctx.fillStyle = '#FFB74D'
       ctx.fill()
 
-      // Mini rotating preview of current crop on top of the stall
-      const rotStall = Math.sin(stallAngle) * 8
+      // Rotating preview of current crop
+      const rotStall = Math.sin(time) * 8
       ctx.fillStyle = '#F57C00'
       ctx.beginPath()
       ctx.arc(rotStall, -35, 12, 0, Math.PI * 2)
@@ -105,14 +160,14 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       ctx.fillStyle = '#388E3C'
       ctx.fillRect(rotStall - 2, -49, 4, 6)
 
-      // Stall price multiplier tag
+      // Stall tag
       ctx.fillStyle = '#2E7D32'
       ctx.font = 'bold 11px Nunito, sans-serif'
       ctx.textAlign = 'center'
       ctx.fillText(`MERCADO: ${dailyMultiplier.toFixed(2)}x`, 0, 60)
       ctx.restore()
 
-      // 2. Render all 24 potential plots
+      // 3. Render all 24 potential plots
       for (let i = 0; i < 24; i++) {
         const row = Math.floor(i / cols)
         const col = i % cols
@@ -133,7 +188,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
         ctx.closePath()
 
         if (!isUnlocked) {
-          // Locked plot - stone/grass with lock icon hint
+          // Locked plot
           ctx.fillStyle = '#D7CCC8'
           ctx.fill()
           ctx.strokeStyle = '#BCAAA4'
@@ -151,14 +206,14 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
           continue
         }
 
-        // Unlocked plot - rich brown fertile earth
+        // Unlocked plot - rich brown earth
         ctx.fillStyle = isHovered ? '#8D6E63' : '#6D4C41'
         ctx.fill()
         ctx.strokeStyle = isHovered ? '#FFD54F' : '#4E342E'
         ctx.lineWidth = isHovered ? 2.5 : 1.5
         ctx.stroke()
 
-        // Plot depth extrusion 3D
+        // Depth extrusion 3D
         ctx.fillStyle = '#3E2723'
         ctx.beginPath()
         ctx.moveTo(x - tileW / 2, y)
@@ -172,7 +227,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
 
         // Planted state
         if (plot && plot.crop && plot.plantedAt) {
-          const cropCfg = CROPS[plot.crop]
+          const cropCfg = CROPS[plot.crop] || CROPS.milho
           const elapsed = (now - plot.plantedAt) / 1000
           const progress = Math.min(1, elapsed / (plot.growDuration || cropCfg.growTimeSeconds))
 
@@ -194,7 +249,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
             ctx.arc(x, y - h - 3, 6, 0, Math.PI * 2)
             ctx.fill()
           } else {
-            // Stage 3: Ready to harvest! (Glows & bobs)
+            // Stage 3: Ready to harvest!
             const bob = Math.sin(now / 150 + i) * 3
             ctx.fillStyle = cropCfg.color
             ctx.beginPath()
@@ -208,7 +263,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
             ctx.fillStyle = '#2E7D32'
             ctx.fillRect(x - 2, y - 4 + bob, 4, 8)
 
-            // Sparkling "Pronto!" indicator
+            // Colher badge
             ctx.fillStyle = '#FFFFFF'
             ctx.font = 'bold 9px Nunito, sans-serif'
             ctx.textAlign = 'center'
@@ -225,6 +280,42 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
         }
       }
 
+      // 4. Render Hired Workers walking between field aisles (Township look)
+      if (workersCount > 0) {
+        for (let w = 0; w < Math.min(workersCount, 5); w++) {
+          const walkPhase = time * 0.8 + (w * Math.PI * 2) / Math.min(workersCount, 5)
+          const wx = originX + Math.sin(walkPhase) * (140 + w * 25)
+          const wy = originY + 120 + Math.cos(walkPhase) * (65 + w * 15)
+
+          // Shadow
+          ctx.beginPath()
+          ctx.ellipse(wx, wy + 2, 10, 4, 0, 0, Math.PI * 2)
+          ctx.fillStyle = 'rgba(0,0,0,0.18)'
+          ctx.fill()
+
+          // Worker Body (straw hat + blue dungarees)
+          ctx.fillStyle = '#1976D2'
+          ctx.fillRect(wx - 4, wy - 14, 8, 12)
+          // Head
+          ctx.beginPath()
+          ctx.arc(wx, wy - 18, 5, 0, Math.PI * 2)
+          ctx.fillStyle = '#FFCC80'
+          ctx.fill()
+          // Straw Hat
+          ctx.beginPath()
+          ctx.ellipse(wx, wy - 22, 11, 4, 0, 0, Math.PI * 2)
+          ctx.fillStyle = '#FDD835'
+          ctx.fill()
+          // Pitchfork / tool
+          ctx.strokeStyle = '#5D4037'
+          ctx.lineWidth = 2
+          ctx.beginPath()
+          ctx.moveTo(wx + 6, wy - 20)
+          ctx.lineTo(wx + 6, wy)
+          ctx.stroke()
+        }
+      }
+
       animId = requestAnimationFrame(render)
     }
 
@@ -235,13 +326,11 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       const clientX = e.clientX - rect.left
       const clientY = e.clientY - rect.top
 
-      // Scale coords
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
       const mx = clientX * scaleX
       const my = clientY * scaleY
 
-      // Find hovered plot
       let found: number | null = null
       for (let i = 0; i < 24; i++) {
         const row = Math.floor(i / cols)
@@ -251,7 +340,6 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
         const dx = Math.abs(mx - pt.x)
         const dy = Math.abs(my - pt.y)
 
-        // Point inside diamond equation: (dx / (w/2)) + (dy / (h/2)) <= 1
         if (dx / (tileW / 2) + dy / (tileH / 2) <= 1) {
           found = i
           break
@@ -275,7 +363,7 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       canvas.removeEventListener('mousemove', handleMouseMove)
       canvas.removeEventListener('click', handleClick)
     }
-  }, [onPlotClick, dailyMultiplier])
+  }, [onPlotClick, dailyMultiplier, workersCount, hasBakery])
 
   return (
     <div className="relative w-full overflow-hidden rounded-3xl border-2 border-[#3E2723]/10 shadow-lg bg-[#E8F5E9]">

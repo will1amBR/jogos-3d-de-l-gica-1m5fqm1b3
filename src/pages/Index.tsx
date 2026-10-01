@@ -12,6 +12,10 @@ import {
   TrendingUp,
   Brain,
   Zap,
+  MapPin,
+  Wrench,
+  Trophy,
+  PackageCheck,
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AuthGate } from '@/components/AuthGate'
@@ -137,8 +141,59 @@ export default function Index() {
           </div>
         </div>
 
-        {/* 3 Key Stats Cards */}
+        {/* Quick RPG Navigation Shortcuts */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Link
+            to="/jornada"
+            className="group bg-[#FFF9F0] border-2 border-[#8BC34A]/40 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#8BC34A] transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                🗺️
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#3E2723]">Jornada & Mapa RPG</h3>
+                <p className="text-xs text-[#795548] font-bold">8 Lugares desbloqueáveis</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#8BC34A] group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          <Link
+            to="/melhorias"
+            className="group bg-[#FFF9F0] border-2 border-[#FF9800]/40 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#FF9800] transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                ⚡
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#3E2723]">Loja de Melhorias</h3>
+                <p className="text-xs text-[#795548] font-bold">Ferramentas, forno e bônus</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#FF9800] group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          <Link
+            to="/conquistas"
+            className="group bg-[#FFF9F0] border-2 border-purple-300 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-purple-400 transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                🏆
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#3E2723]">Conquistas & Ranking</h3>
+                <p className="text-xs text-[#795548] font-bold">Prêmios em moedas e placar</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#5E35B1] group-hover:translate-x-1 transition-transform" />
+          </Link>
+        </div>
+
+        {/* 3 Key Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <div className="bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center text-[#5E35B1] shrink-0">
               <Award className="w-8 h-8" />
@@ -174,10 +229,24 @@ export default function Index() {
             </div>
             <div>
               <span className="text-xs uppercase font-extrabold text-[#795548] tracking-wider block">
-                Colheitas Realizadas
+                Colheitas Feitas
               </span>
               <span className="text-2xl sm:text-3xl font-black text-[#2E7D32] tabular-nums">
                 {player?.total_harvests || 0}
+              </span>
+            </div>
+          </div>
+
+          <div className="bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-orange-100 flex items-center justify-center text-3xl shrink-0">
+              🥖
+            </div>
+            <div>
+              <span className="text-xs uppercase font-extrabold text-[#795548] tracking-wider block">
+                Pães Entregues
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-[#D84315] tabular-nums">
+                {player?.total_bread_delivered || 0}
               </span>
             </div>
           </div>

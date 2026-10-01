@@ -11,6 +11,9 @@ import Index from './pages/Index'
 import Fazenda from './pages/Fazenda'
 import Fabrica from './pages/Fabrica'
 import Tetris from './pages/Tetris'
+import Jornada from './pages/Jornada'
+import Melhorias from './pages/Melhorias'
+import Conquistas from './pages/Conquistas'
 
 // Auth Pages
 import ForgotPassword from './pages/ForgotPassword'
@@ -31,6 +34,9 @@ const App = () => (
             <Route path="/fazenda" element={<Fazenda />} />
             <Route path="/fabrica" element={<Fabrica />} />
             <Route path="/tetris" element={<Tetris />} />
+            <Route path="/jornada" element={<Jornada />} />
+            <Route path="/melhorias" element={<Melhorias />} />
+            <Route path="/conquistas" element={<Conquistas />} />
             <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/redefinir-senha" element={<ResetPassword />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />

@@ -31,7 +31,10 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Central do Hub', path: '/', icon: Gamepad2 },
     { name: 'Fazenda Encantada', path: '/fazenda', icon: Tractor },
-    { name: 'Fábrica de Garrafas', path: '/fabrica', icon: FlaskConical },
+    { name: 'Jornada RPG', path: '/jornada', icon: Sparkles },
+    { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
+    { name: 'Conquistas', path: '/conquistas', icon: Sparkles },
+    { name: 'Fábrica', path: '/fabrica', icon: FlaskConical },
     { name: 'Tetris 3D', path: '/tetris', icon: Layers },
   ]
 
@@ -214,8 +217,20 @@ export const Footer: React.FC = () => {
             🚜 Fazenda Encantada
           </Link>
           <span>•</span>
+          <Link to="/jornada" className="hover:text-[#8BC34A] transition-colors">
+            🗺️ Jornada RPG
+          </Link>
+          <span>•</span>
+          <Link to="/melhorias" className="hover:text-[#8BC34A] transition-colors">
+            ⚡ Loja de Melhorias
+          </Link>
+          <span>•</span>
+          <Link to="/conquistas" className="hover:text-[#8BC34A] transition-colors">
+            🏆 Conquistas & Ranking
+          </Link>
+          <span>•</span>
           <Link to="/fabrica" className="hover:text-[#8BC34A] transition-colors">
-            🧪 Fábrica de Garrafas
+            🧪 Fábrica
           </Link>
           <span>•</span>
           <Link to="/tetris" className="hover:text-[#8BC34A] transition-colors">

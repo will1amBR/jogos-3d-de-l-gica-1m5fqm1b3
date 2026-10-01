@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T06:28:27.776Z",
+  "generatedAt": "2026-10-01T06:40:00.399Z",
   "collections": [
     {
       "name": "users",
@@ -117,6 +117,30 @@
           "required": false,
           "system": false,
           "autodateTriggers": ["onCreate", "onUpdate"]
+        },
+        {
+          "name": "hired_workers",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "bread_count",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_bread_delivered",
+          "type": "number",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "total_soja_harvested",
+          "type": "number",
+          "required": false,
+          "system": false
         }
       ],
       "indexes": ["CREATE INDEX idx_player_user ON player (user)"]
@@ -241,6 +265,244 @@
       ],
       "indexes": [
         "CREATE INDEX idx_daily_quests_player_created ON daily_quests (player, created DESC)"
+      ]
+    },
+    {
+      "name": "player_upgrades",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "player",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "player"
+        },
+        {
+          "name": "upgrade_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "level",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_player_upgrades_player_uid ON player_upgrades (player, upgrade_id)"
+      ]
+    },
+    {
+      "name": "player_places",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "player",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "player"
+        },
+        {
+          "name": "place_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "visited",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "claimed_reward",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_player_places_player_pid ON player_places (player, place_id)"
+      ]
+    },
+    {
+      "name": "player_achievements",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "player",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "player"
+        },
+        {
+          "name": "achievement_id",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "claimed",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "unlocked_at",
+          "type": "date",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE UNIQUE INDEX idx_player_achievements_player_aid ON player_achievements (player, achievement_id)"
+      ]
+    },
+    {
+      "name": "customer_orders",
+      "type": "base",
+      "apiRules": {
+        "list": "@request.auth.id != ''",
+        "view": "@request.auth.id != ''",
+        "create": "@request.auth.id != ''",
+        "update": "@request.auth.id != ''",
+        "delete": "@request.auth.id != ''"
+      },
+      "fields": [
+        {
+          "name": "player",
+          "type": "relation",
+          "required": true,
+          "system": false,
+          "collectionRef": "player"
+        },
+        {
+          "name": "customer_name",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "customer_avatar",
+          "type": "text",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "item_type",
+          "type": "text",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "quantity_required",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "reward_coins",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "reward_xp",
+          "type": "number",
+          "required": true,
+          "system": false
+        },
+        {
+          "name": "fulfilled",
+          "type": "bool",
+          "required": false,
+          "system": false
+        },
+        {
+          "name": "created",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate"]
+        },
+        {
+          "name": "updated",
+          "type": "autodate",
+          "required": false,
+          "system": false,
+          "autodateTriggers": ["onCreate", "onUpdate"]
+        }
+      ],
+      "indexes": [
+        "CREATE INDEX idx_customer_orders_player_fulfilled ON customer_orders (player, fulfilled)"
       ]
     }
   ]
