@@ -270,16 +270,32 @@ export default function Mahjong() {
 
   const winClaimedRef = useRef(false)
 
-  // Sons sinteticos via Web Audio API
+  // Reusable AudioContext singleton to prevent mobile crashes
+  const audioCtxRef = useRef<AudioContext | null>(null)
+
+  const getAudioContext = useCallback(() => {
+    if (typeof window === 'undefined') return null
+    if (!audioCtxRef.current) {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      if (AudioCtx) {
+        audioCtxRef.current = new AudioCtx()
+      }
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(() => {})
+    }
+    return audioCtxRef.current
+  }, [])
+
+  // Sons sinteticos via Web Audio API singleton
   const playSound = useCallback(
     (type: 'select' | 'match' | 'shuffle' | 'win' | 'blocked') => {
       if (!soundEnabled) return
       try {
-        const AudioCtx =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-        if (!AudioCtx) return
-        const ctx = new AudioCtx()
+        const ctx = getAudioContext()
+        if (!ctx) return
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
         osc.connect(gain)
@@ -289,87 +305,106 @@ export default function Mahjong() {
         if (type === 'select') {
           osc.type = 'sine'
           osc.frequency.setValueAtTime(587.33, now)
-          gain.gain.setValueAtTime(0.12, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08)
+          gain.gain.setValueAtTime(0.08, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06)
           osc.start(now)
-          osc.stop(now + 0.08)
+          osc.stop(now + 0.06)
         } else if (type === 'match') {
           osc.type = 'triangle'
           osc.frequency.setValueAtTime(523.25, now)
-          osc.frequency.setValueAtTime(659.25, now + 0.07)
-          osc.frequency.setValueAtTime(783.99, now + 0.14)
-          osc.frequency.setValueAtTime(1046.5, now + 0.22)
-          gain.gain.setValueAtTime(0.2, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4)
+          osc.frequency.setValueAtTime(659.25, now + 0.06)
+          osc.frequency.setValueAtTime(783.99, now + 0.12)
+          osc.frequency.setValueAtTime(1046.5, now + 0.18)
+          gain.gain.setValueAtTime(0.15, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3)
           osc.start(now)
-          osc.stop(now + 0.4)
+          osc.stop(now + 0.3)
         } else if (type === 'shuffle') {
           osc.type = 'sine'
           osc.frequency.setValueAtTime(300, now)
-          osc.frequency.exponentialRampToValueAtTime(600, now + 0.2)
-          gain.gain.setValueAtTime(0.15, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2)
+          osc.frequency.exponentialRampToValueAtTime(600, now + 0.15)
+          gain.gain.setValueAtTime(0.12, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15)
           osc.start(now)
-          osc.stop(now + 0.2)
+          osc.stop(now + 0.15)
         } else if (type === 'blocked') {
           osc.type = 'square'
           osc.frequency.setValueAtTime(180, now)
-          osc.frequency.exponentialRampToValueAtTime(110, now + 0.12)
-          gain.gain.setValueAtTime(0.08, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12)
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.08)
+          gain.gain.setValueAtTime(0.06, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
           osc.start(now)
-          osc.stop(now + 0.12)
+          osc.stop(now + 0.08)
         } else if (type === 'win') {
           osc.type = 'sine'
           osc.frequency.setValueAtTime(440, now)
-          osc.frequency.linearRampToValueAtTime(880, now + 0.4)
-          gain.gain.setValueAtTime(0.25, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8)
+          osc.frequency.linearRampToValueAtTime(880, now + 0.3)
+          gain.gain.setValueAtTime(0.2, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
           osc.start(now)
-          osc.stop(now + 0.8)
+          osc.stop(now + 0.6)
         }
       } catch {
         // audio fail safe
       }
     },
-    [soundEnabled],
+    [soundEnabled, getAudioContext],
   )
 
-  // Verifica se peca esta livre:
-  // 1. Nenhuma peca acima na mesma posicao ou sobreposta
-  // 2. Pelo menos um lado lateral (esquerdo ou direito) livre na mesma camada
-  const isTileFree = useCallback((targetSlot: BoardSlot, currentSlots: BoardSlot[]): boolean => {
-    if (!targetSlot.tile) return false
+  // Mapa memoizado de quais pecas estao livres (calculado UMA VEZ por mudanca de tabuleiro)
+  const freeTileMap = useMemo(() => {
+    const map = new Map<string, boolean>()
 
-    // Verifica se ha peca por cima
-    const hasTileAbove = currentSlots.some((s) => {
-      if (!s.tile) return false
-      if (s.layer <= targetSlot.layer) return false
-      const rowDiff = Math.abs(s.row - targetSlot.row)
-      const colDiff = Math.abs(s.col - targetSlot.col)
-      return rowDiff < 1 && colDiff < 1
-    })
+    // Filtrar apenas slots com pecas
+    const activeSlots = boardSlots.filter((s) => s.tile !== null)
 
-    if (hasTileAbove) return false
-
-    // Verifica vizinhos a esquerda e a direita no mesmo nivel
-    let hasLeftNeighbor = false
-    let hasRightNeighbor = false
-
-    for (const s of currentSlots) {
-      if (!s.tile || s.layer !== targetSlot.layer || s.id === targetSlot.id) continue
-      if (Math.abs(s.row - targetSlot.row) < 0.5) {
-        if (s.col === targetSlot.col - 1) hasLeftNeighbor = true
-        if (s.col === targetSlot.col + 1) hasRightNeighbor = true
+    for (const targetSlot of activeSlots) {
+      // 1. Verifica se ha peca por cima
+      let hasAbove = false
+      for (const s of activeSlots) {
+        if (s.layer > targetSlot.layer) {
+          const rowDiff = Math.abs(s.row - targetSlot.row)
+          const colDiff = Math.abs(s.col - targetSlot.col)
+          if (rowDiff < 0.9 && colDiff < 0.9) {
+            hasAbove = true
+            break
+          }
+        }
       }
+
+      if (hasAbove) {
+        map.set(targetSlot.id, false)
+        continue
+      }
+
+      // 2. Verifica vizinhos a esquerda e a direita no mesmo nivel
+      let hasLeft = false
+      let hasRight = false
+
+      for (const s of activeSlots) {
+        if (s.layer === targetSlot.layer && s.id !== targetSlot.id) {
+          if (Math.abs(s.row - targetSlot.row) < 0.5) {
+            if (s.col === targetSlot.col - 1) hasLeft = true
+            if (s.col === targetSlot.col + 1) hasRight = true
+            if (hasLeft && hasRight) break
+          }
+        }
+      }
+
+      map.set(targetSlot.id, !(hasLeft && hasRight))
     }
 
-    if (hasLeftNeighbor && hasRightNeighbor) {
-      return false
-    }
+    return map
+  }, [boardSlots])
 
-    return true
-  }, [])
+  // Verifica se peca esta livre via Map O(1)
+  const isTileFree = useCallback(
+    (targetSlot: BoardSlot): boolean => {
+      if (!targetSlot.tile) return false
+      return freeTileMap.get(targetSlot.id) || false
+    },
+    [freeTileMap],
+  )
 
   // Iniciar nova partida
   const startNewGame = useCallback(
@@ -417,20 +452,25 @@ export default function Mahjong() {
 
   // Pares livres disponiveis
   const availablePairs = useMemo(() => {
-    const freeSlots = boardSlots.filter((s) => s.tile !== null && isTileFree(s, boardSlots))
+    const freeSlots = boardSlots.filter((s) => s.tile !== null && freeTileMap.get(s.id))
     const pairs: [BoardSlot, BoardSlot][] = []
 
-    for (let i = 0; i < freeSlots.length; i++) {
-      for (let j = i + 1; j < freeSlots.length; j++) {
-        const a = freeSlots[i]
-        const b = freeSlots[j]
-        if (a.tile && b.tile && a.tile.matchGroup === b.tile.matchGroup) {
-          pairs.push([a, b])
-        }
+    // Agrupa por matchGroup para busca linear rapida
+    const grouped: Record<string, BoardSlot[]> = {}
+    for (const slot of freeSlots) {
+      const g = slot.tile!.matchGroup
+      if (!grouped[g]) grouped[g] = []
+      grouped[g].push(slot)
+    }
+
+    for (const key in grouped) {
+      const list = grouped[key]
+      if (list.length >= 2) {
+        pairs.push([list[0], list[1]])
       }
     }
     return pairs
-  }, [boardSlots, isTileFree])
+  }, [boardSlots, freeTileMap])
 
   // Historico de Desfazer
   const pushHistory = useCallback(() => {
@@ -514,12 +554,13 @@ export default function Mahjong() {
   const handleSlotClick = (slot: BoardSlot) => {
     if (!slot.tile || isWon) return
 
-    if (!isTileFree(slot, boardSlots)) {
+    const isFree = freeTileMap.get(slot.id)
+    if (!isFree) {
       playSound('blocked')
       toast({
-        title: 'Peca Bloqueada!',
+        title: 'Peça Bloqueada!',
         description:
-          'A peca precisa ter pelo menos um lado (esquerdo ou direito) livre e nenhuma peca por cima.',
+          'A peça precisa ter pelo menos um lado (esquerdo ou direito) livre e nenhuma peça por cima.',
         variant: 'destructive',
       })
       return
@@ -820,31 +861,31 @@ export default function Mahjong() {
         </div>
 
         {/* Tabuleiro 3D Mahjong */}
-        <div className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-4 sm:p-8 shadow-2xl min-h-[580px] flex items-center justify-center overflow-x-auto">
+        <div className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-2 sm:p-6 shadow-2xl min-h-[540px] flex items-center justify-center overflow-x-auto">
           <div className="absolute inset-0 bg-radial from-transparent to-black/35 pointer-events-none rounded-2xl" />
 
-          {/* Area do tabuleiro com profundidade 3D em CSS */}
+          {/* Area do tabuleiro com profundidade 3D em CSS otimizada para mobile */}
           <div
-            className="relative transition-all duration-300 my-4"
+            className="relative my-2 sm:my-4"
             style={{
-              width: `${(maxCol + 1) * 64}px`,
-              height: `${(maxRow + 1) * 78}px`,
+              width: `${(maxCol + 1) * 62}px`,
+              height: `${(maxRow + 1) * 74}px`,
               minWidth: '320px',
             }}
           >
             {boardSlots.map((slot) => {
               if (!slot.tile) return null
 
-              const isFree = isTileFree(slot, boardSlots)
+              const isFree = freeTileMap.get(slot.id) || false
               const isSelected = selectedSlotId === slot.id
               const isHinted = hintPair?.includes(slot.id) || false
 
               const layerZ = slot.layer * 10
-              const layerOffsetX = slot.layer * -4
-              const layerOffsetY = slot.layer * -6
+              const layerOffsetX = slot.layer * -3
+              const layerOffsetY = slot.layer * -5
 
-              const leftPos = slot.col * 60 + layerOffsetX
-              const topPos = slot.row * 72 + layerOffsetY
+              const leftPos = slot.col * 58 + layerOffsetX
+              const topPos = slot.row * 68 + layerOffsetY
 
               return (
                 <div
@@ -855,30 +896,29 @@ export default function Mahjong() {
                     top: `${topPos}px`,
                     zIndex: layerZ + slot.row,
                   }}
-                  className={`absolute w-14 h-18 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-all duration-150 transform active:scale-95 ${
+                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-transform duration-100 touch-manipulation active:scale-95 ${
                     isSelected
-                      ? 'scale-105 ring-4 ring-amber-400'
+                      ? 'scale-105 ring-3 ring-amber-400 z-40'
                       : isHinted
-                        ? 'ring-4 ring-yellow-300 animate-pulse'
+                        ? 'ring-3 ring-yellow-300 animate-pulse'
                         : isFree
-                          ? 'hover:brightness-105 hover:-translate-y-1'
-                          : 'opacity-70 filter brightness-90 cursor-not-allowed'
+                          ? 'hover:brightness-105'
+                          : 'opacity-65 cursor-not-allowed'
                   }`}
                 >
-                  {/* Base de sombra 3D da peca */}
+                  {/* Base de sombra 3D da peca simplificada (sem filtro pesado de drop-shadow) */}
                   <div
-                    className="absolute inset-0 rounded-xl bg-[#C7BAA7] shadow-xl"
+                    className="absolute inset-0 rounded-xl bg-[#5D4037]/40"
                     style={{
-                      transform: 'translate(4px, 6px)',
-                      filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.5))',
+                      transform: 'translate(3px, 4px)',
                     }}
                   />
 
-                  {/* Camada verde de jade traseira */}
+                  {/* Camada verde traseira de jade */}
                   <div
-                    className="absolute inset-0 rounded-xl bg-gradient-to-br from-[#1B5E20] to-[#2E7D32]"
+                    className="absolute inset-0 rounded-xl bg-[#1B5E20]"
                     style={{
-                      transform: 'translate(2px, 3px)',
+                      transform: 'translate(1.5px, 2px)',
                     }}
                   />
 
@@ -886,20 +926,20 @@ export default function Mahjong() {
                   <div
                     className={`relative w-full h-full rounded-xl border-2 transition-colors ${
                       isSelected
-                        ? 'bg-amber-50 border-amber-400 shadow-lg'
+                        ? 'bg-amber-50 border-amber-400 shadow-md'
                         : isFree
-                          ? 'bg-gradient-to-b from-[#FFFFFF] via-[#FFFDF9] to-[#F3EDE2] border-[#D7CCC8]'
+                          ? 'bg-[#FFFDF9] border-[#D7CCC8]'
                           : 'bg-[#ECE5D8] border-[#BCAAA4]'
                     }`}
                   >
                     {renderTileContent(slot.tile)}
 
                     {!isFree && (
-                      <div className="absolute inset-0 rounded-xl bg-black/15 pointer-events-none" />
+                      <div className="absolute inset-0 rounded-xl bg-black/10 pointer-events-none" />
                     )}
 
                     {slot.layer > 0 && (
-                      <div className="absolute bottom-1 right-1.5 text-[8px] font-black text-[#8D6E63]/70">
+                      <div className="absolute bottom-1 right-1 text-[8px] font-black text-[#8D6E63]/70">
                         N{slot.layer + 1}
                       </div>
                     )}

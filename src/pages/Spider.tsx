@@ -159,16 +159,32 @@ export default function Spider() {
   // Win reward claimed flag
   const winClaimedRef = useRef(false)
 
-  // Play subtle sound using Web Audio API
+  // Reusable AudioContext singleton to prevent mobile Chrome memory leaks / crashes
+  const audioCtxRef = useRef<AudioContext | null>(null)
+
+  const getAudioContext = useCallback(() => {
+    if (typeof window === 'undefined') return null
+    if (!audioCtxRef.current) {
+      const AudioCtx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      if (AudioCtx) {
+        audioCtxRef.current = new AudioCtx()
+      }
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume().catch(() => {})
+    }
+    return audioCtxRef.current
+  }, [])
+
+  // Play subtle sound using shared Web Audio API
   const playSound = useCallback(
     (type: 'card' | 'deal' | 'run' | 'win' | 'error') => {
       if (!soundEnabled) return
       try {
-        const AudioCtx =
-          window.AudioContext ||
-          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-        if (!AudioCtx) return
-        const ctx = new AudioCtx()
+        const ctx = getAudioContext()
+        if (!ctx) return
         const osc = ctx.createOscillator()
         const gain = ctx.createGain()
         osc.connect(gain)
@@ -177,49 +193,48 @@ export default function Spider() {
         const now = ctx.currentTime
         if (type === 'card') {
           osc.frequency.setValueAtTime(440, now)
-          osc.frequency.exponentialRampToValueAtTime(880, now + 0.08)
-          gain.gain.setValueAtTime(0.12, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08)
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.06)
+          gain.gain.setValueAtTime(0.08, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06)
           osc.start(now)
-          osc.stop(now + 0.08)
+          osc.stop(now + 0.06)
         } else if (type === 'deal') {
           osc.frequency.setValueAtTime(320, now)
-          osc.frequency.exponentialRampToValueAtTime(600, now + 0.15)
-          gain.gain.setValueAtTime(0.15, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15)
+          osc.frequency.exponentialRampToValueAtTime(550, now + 0.1)
+          gain.gain.setValueAtTime(0.1, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1)
           osc.start(now)
-          osc.stop(now + 0.15)
+          osc.stop(now + 0.1)
         } else if (type === 'run') {
           osc.type = 'triangle'
-          osc.frequency.setValueAtTime(523.25, now) // C5
-          osc.frequency.setValueAtTime(659.25, now + 0.1) // E5
-          osc.frequency.setValueAtTime(783.99, now + 0.2) // G5
-          osc.frequency.setValueAtTime(1046.5, now + 0.3) // C6
-          gain.gain.setValueAtTime(0.2, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5)
+          osc.frequency.setValueAtTime(523.25, now)
+          osc.frequency.setValueAtTime(659.25, now + 0.08)
+          osc.frequency.setValueAtTime(783.99, now + 0.16)
+          gain.gain.setValueAtTime(0.12, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35)
           osc.start(now)
-          osc.stop(now + 0.5)
+          osc.stop(now + 0.35)
         } else if (type === 'win') {
           osc.type = 'sine'
           osc.frequency.setValueAtTime(440, now)
-          osc.frequency.linearRampToValueAtTime(880, now + 0.3)
-          gain.gain.setValueAtTime(0.25, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8)
+          osc.frequency.linearRampToValueAtTime(880, now + 0.25)
+          gain.gain.setValueAtTime(0.15, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6)
           osc.start(now)
-          osc.stop(now + 0.8)
+          osc.stop(now + 0.6)
         } else if (type === 'error') {
           osc.frequency.setValueAtTime(200, now)
-          osc.frequency.exponentialRampToValueAtTime(120, now + 0.12)
-          gain.gain.setValueAtTime(0.1, now)
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12)
+          osc.frequency.exponentialRampToValueAtTime(120, now + 0.08)
+          gain.gain.setValueAtTime(0.08, now)
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08)
           osc.start(now)
-          osc.stop(now + 0.12)
+          osc.stop(now + 0.08)
         }
       } catch {
         // audio context not allowed or failed, ignore
       }
     },
-    [soundEnabled],
+    [soundEnabled, getAudioContext],
   )
 
   // Start / restart new game
@@ -699,6 +714,16 @@ export default function Spider() {
     return `${m}:${s < 10 ? '0' : ''}${s}`
   }
 
+  // Pre-calculate column height in pixels to avoid layout thrashing
+  const getColumnHeight = useCallback((col: Card[]) => {
+    if (col.length === 0) return 380
+    let total = 0
+    for (let i = 0; i < col.length; i++) {
+      total += col[i].faceUp ? 22 : 12
+    }
+    return Math.max(380, total + 70)
+  }, [])
+
   return (
     <AuthGate>
       <div className="space-y-4 pb-12 animate-fade-in select-none">
@@ -858,8 +883,29 @@ export default function Spider() {
           </div>
         </div>
 
+        {/* Selected Card Status Indicator on Mobile */}
+        {selected && (
+          <div className="bg-amber-100 border border-amber-300 rounded-2xl px-4 py-2 flex items-center justify-between text-xs font-black text-amber-950 animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👉</span>
+              <span>
+                Carta selecionada: Coluna {selected.colIndex + 1} (
+                {VALUE_LABELS[tableau[selected.colIndex][selected.cardIndex]?.value]}{' '}
+                {SUIT_SYMBOLS[tableau[selected.colIndex][selected.cardIndex]?.suit]}) — Toque na
+                coluna de destino!
+              </span>
+            </div>
+            <button
+              onClick={() => setSelected(null)}
+              className="text-amber-800 underline hover:text-amber-950 text-xs px-2 py-0.5"
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+
         {/* Felt Spider Playfield */}
-        <div className="relative rounded-3xl bg-gradient-to-b from-[#1b5e20] via-[#2e7d32] to-[#1e6b23] border-4 border-[#33691E] p-3 sm:p-5 shadow-2xl min-h-[580px] overflow-hidden">
+        <div className="relative rounded-3xl bg-gradient-to-b from-[#1b5e20] via-[#2e7d32] to-[#1e6b23] border-4 border-[#33691E] p-2.5 sm:p-5 shadow-2xl min-h-[580px] overflow-hidden">
           {/* Subtle wood / felt texture border & sheen */}
           <div className="absolute inset-0 bg-radial from-transparent to-black/25 pointer-events-none" />
 
@@ -870,17 +916,17 @@ export default function Spider() {
               <button
                 onClick={handleDealStock}
                 disabled={stock.length === 0 || isWon}
-                className={`relative group rounded-xl transition-all duration-200 transform active:scale-95 ${
+                className={`relative group rounded-xl transition-all duration-150 transform active:scale-95 touch-manipulation ${
                   stock.length > 0
-                    ? 'cursor-pointer hover:shadow-lg hover:-translate-y-0.5'
+                    ? 'cursor-pointer hover:shadow-lg'
                     : 'opacity-40 cursor-not-allowed'
                 }`}
                 title="Distribuir 1 carta para cada coluna"
               >
                 {/* Visual card stack representation */}
-                <div className="relative w-14 h-20 sm:w-16 sm:h-24 bg-gradient-to-br from-[#1E88E5] to-[#1565C0] rounded-xl border-2 border-white/80 shadow-md flex items-center justify-center">
+                <div className="relative w-12 h-18 sm:w-16 sm:h-24 bg-gradient-to-br from-[#1E88E5] to-[#1565C0] rounded-xl border-2 border-white/80 shadow-md flex items-center justify-center">
                   <div className="absolute inset-1 border border-white/30 rounded-lg flex items-center justify-center">
-                    <span className="text-xl sm:text-2xl text-white font-black drop-shadow">
+                    <span className="text-lg sm:text-2xl text-white font-black drop-shadow">
                       🕷️
                     </span>
                   </div>
@@ -893,13 +939,13 @@ export default function Spider() {
 
               <div className="text-white text-xs">
                 <span className="font-black block text-amber-200 uppercase tracking-wider text-[10px]">
-                  Estoque de Cartas
+                  Estoque
                 </span>
                 <span className="font-extrabold text-white/90">
-                  {stock.length > 0 ? `${stock.length} rodada(s) restante(s)` : 'Esgotado'}
+                  {stock.length > 0 ? `${stock.length} restante(s)` : 'Esgotado'}
                 </span>
-                <span className="block text-[10px] text-white/60">
-                  Toque para distribuir nas 10 colunas
+                <span className="block text-[10px] text-white/60 hidden sm:inline">
+                  Toque para distribuir
                 </span>
               </div>
             </div>
@@ -915,23 +961,25 @@ export default function Spider() {
                 </span>
               </div>
 
-              <div className="flex items-center gap-1 bg-black/20 p-1.5 rounded-2xl border border-white/20 min-h-[50px]">
+              <div className="flex items-center gap-1 bg-black/20 p-1.5 rounded-2xl border border-white/20 min-h-[46px] overflow-x-auto max-w-[200px] sm:max-w-none">
                 {Array.from({ length: 8 }).map((_, i) => {
                   const suit = completedRuns[i]
                   return (
                     <div
                       key={i}
-                      className={`w-7 h-10 sm:w-9 sm:h-12 rounded-lg border flex items-center justify-center text-xs sm:text-sm font-black transition-all ${
+                      className={`w-6 h-9 sm:w-9 sm:h-12 rounded-lg border flex items-center justify-center text-xs sm:text-sm font-black transition-all shrink-0 ${
                         suit
-                          ? 'bg-white border-amber-300 shadow-sm animate-scale-in text-[#212121]'
+                          ? 'bg-white border-amber-300 shadow-sm text-[#212121]'
                           : 'bg-white/5 border-dashed border-white/20 text-white/30'
                       }`}
                     >
                       {suit ? (
                         <div className="flex flex-col items-center">
-                          <span className="text-[10px] font-black leading-none">K</span>
+                          <span className="text-[9px] sm:text-[10px] font-black leading-none">
+                            K
+                          </span>
                           <span
-                            className="text-xs leading-none"
+                            className="text-[10px] sm:text-xs leading-none"
                             style={{ color: SUIT_COLORS[suit] }}
                           >
                             {SUIT_SYMBOLS[suit]}
@@ -947,29 +995,37 @@ export default function Spider() {
             </div>
           </div>
 
-          {/* 10 Tableau Columns */}
-          <div className="relative z-10 grid grid-cols-10 gap-1 sm:gap-2 min-h-[440px]">
+          {/* 10 Tableau Columns - with smooth horizontal scroll if needed on narrow phones */}
+          <div className="relative z-10 grid grid-cols-10 gap-0.5 sm:gap-2 min-h-[440px] overflow-x-auto">
             {tableau.map((col, colIdx) => {
               const isColTargetOfHint = hint?.toCol === colIdx
               const isColSourceOfHint = hint?.fromCol === colIdx
+              const colHeight = getColumnHeight(col)
+
+              // Precalculate offsets for the column
+              let currentTop = 0
+              const offsets = col.map((c) => {
+                const top = currentTop
+                currentTop += c.faceUp ? 22 : 12
+                return top
+              })
 
               return (
                 <div
                   key={colIdx}
                   onClick={() => {
-                    if (col.length === 0) {
-                      handleEmptyColumnClick(colIdx)
-                    }
+                    handleEmptyColumnClick(colIdx)
                   }}
-                  className={`relative flex flex-col rounded-xl transition-all min-h-[380px] p-0.5 ${
+                  style={{ minHeight: `${colHeight}px` }}
+                  className={`relative flex flex-col rounded-lg sm:rounded-xl transition-colors p-0.5 touch-manipulation cursor-pointer ${
                     col.length === 0
-                      ? 'border-2 border-dashed border-white/30 bg-white/5 hover:bg-white/10 cursor-pointer flex items-start justify-center'
+                      ? 'border-2 border-dashed border-white/40 bg-white/10 hover:bg-white/20 flex items-start justify-center'
                       : ''
-                  } ${isColTargetOfHint ? 'ring-2 ring-amber-400 bg-amber-400/10' : ''}`}
+                  } ${isColTargetOfHint ? 'ring-2 ring-amber-400 bg-amber-400/20' : ''}`}
                 >
                   {/* Empty slot placeholder */}
                   {col.length === 0 && (
-                    <div className="w-full h-14 sm:h-20 rounded-lg border border-dashed border-white/25 flex items-center justify-center text-white/30 text-[10px] font-black">
+                    <div className="w-full h-14 sm:h-20 rounded-lg border border-dashed border-white/35 flex items-center justify-center text-white/60 text-[9px] sm:text-[10px] font-black">
                       Vazio
                     </div>
                   )}
@@ -979,12 +1035,7 @@ export default function Spider() {
                     const isSelected =
                       selected?.colIndex === colIdx && cardIdx >= selected.cardIndex
                     const isHintSource = isColSourceOfHint && cardIdx === hint?.fromCardIdx
-
-                    // Calculate overlap offset: face-down cards overlap more tightly
-                    // on mobile, keep overlap tight to avoid extreme vertical overflow
-                    const topOffset = col.slice(0, cardIdx).reduce((acc, c) => {
-                      return acc + (c.faceUp ? 22 : 12)
-                    }, 0)
+                    const topOffset = offsets[cardIdx]
 
                     return (
                       <div
@@ -997,54 +1048,56 @@ export default function Spider() {
                           top: `${topOffset}px`,
                           zIndex: cardIdx + 1,
                         }}
-                        className={`absolute left-0 right-0 rounded-lg sm:rounded-xl shadow-md transition-all duration-150 cursor-pointer ${
+                        className={`absolute left-0 right-0 rounded-lg sm:rounded-xl shadow-xs transition-transform duration-100 cursor-pointer touch-manipulation ${
                           card.faceUp
-                            ? 'bg-white border-2'
-                            : 'bg-gradient-to-br from-[#1E88E5] to-[#0D47A1] border-2 border-white/80'
+                            ? 'bg-white border'
+                            : 'bg-gradient-to-br from-[#1E88E5] to-[#0D47A1] border border-white/80'
                         } ${
                           isSelected
-                            ? 'ring-3 ring-amber-400 border-amber-500 scale-[1.03] shadow-xl'
+                            ? 'ring-2 ring-amber-400 border-amber-500 scale-[1.04] shadow-md z-30'
                             : card.faceUp
                               ? 'border-[#BDBDBD] hover:border-[#8BC34A]'
                               : 'hover:brightness-105'
-                        } ${isHintSource ? 'ring-4 ring-yellow-300 animate-pulse' : ''}`}
+                        } ${isHintSource ? 'ring-2 ring-yellow-300 animate-pulse' : ''}`}
                       >
                         {card.faceUp ? (
                           // Face Up Card Content
                           <div
-                            className="p-1 sm:p-1.5 h-14 sm:h-20 flex flex-col justify-between"
+                            className="p-0.5 sm:p-1.5 h-13 sm:h-20 flex flex-col justify-between"
                             style={{ color: SUIT_COLORS[card.suit] }}
                           >
                             {/* Card Top Corner */}
                             <div className="flex items-center justify-between leading-none">
-                              <span className="text-xs sm:text-sm font-black tabular-nums">
+                              <span className="text-[11px] sm:text-sm font-black tabular-nums">
                                 {VALUE_LABELS[card.value]}
                               </span>
-                              <span className="text-xs sm:text-sm leading-none">
+                              <span className="text-[10px] sm:text-sm leading-none">
                                 {SUIT_SYMBOLS[card.suit]}
                               </span>
                             </div>
 
                             {/* Card Center Symbol */}
-                            <div className="flex items-center justify-center text-sm sm:text-xl opacity-90 leading-none">
+                            <div className="flex items-center justify-center text-xs sm:text-xl opacity-90 leading-none">
                               {SUIT_SYMBOLS[card.suit]}
                             </div>
 
                             {/* Card Bottom Corner */}
                             <div className="flex items-center justify-between leading-none transform rotate-180 opacity-70">
-                              <span className="text-[10px] sm:text-xs font-black">
+                              <span className="text-[9px] sm:text-xs font-black">
                                 {VALUE_LABELS[card.value]}
                               </span>
-                              <span className="text-[10px] sm:text-xs">
+                              <span className="text-[9px] sm:text-xs">
                                 {SUIT_SYMBOLS[card.suit]}
                               </span>
                             </div>
                           </div>
                         ) : (
                           // Face Down Card Back Pattern
-                          <div className="h-10 sm:h-16 flex items-center justify-center p-1">
-                            <div className="w-full h-full border border-white/20 rounded-md bg-pattern flex items-center justify-center">
-                              <span className="text-[10px] text-white/50 font-black">🕷️</span>
+                          <div className="h-9 sm:h-16 flex items-center justify-center p-0.5">
+                            <div className="w-full h-full border border-white/20 rounded-sm sm:rounded-md flex items-center justify-center">
+                              <span className="text-[9px] sm:text-[10px] text-white/50 font-black">
+                                🕷️
+                              </span>
                             </div>
                           </div>
                         )}

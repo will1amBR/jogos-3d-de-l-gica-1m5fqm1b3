@@ -294,6 +294,16 @@ export default function Fazenda() {
 
           {/* Action Bar Pills */}
           <div className="flex flex-wrap items-center gap-2">
+            <Link to="/mundo">
+              <Button
+                type="button"
+                className="bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-black rounded-2xl shadow-sm text-xs sm:text-sm h-11 transition-transform active:scale-95"
+              >
+                <Sparkles className="w-4 h-4 mr-1.5" />
+                Mundo RPG Andável 🚶
+              </Button>
+            </Link>
+
             <Button
               type="button"
               onClick={() => setOrdersOpen(true)}

@@ -31,14 +31,14 @@ export const Navbar: React.FC = () => {
 
   const navLinks = [
     { name: 'Central do Hub', path: '/', icon: Gamepad2 },
-    { name: 'Fazenda Encantada', path: '/fazenda', icon: Tractor },
-    { name: 'Paciência Spider', path: '/spider', icon: Spade },
-    { name: 'Mahjong Solitaire', path: '/mahjong', icon: Sparkles },
+    { name: 'Mundo RPG', path: '/mundo', icon: Sparkles },
+    { name: 'Fazenda', path: '/fazenda', icon: Tractor },
+    { name: 'Spider', path: '/spider', icon: Spade },
+    { name: 'Mahjong', path: '/mahjong', icon: Sparkles },
     { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
-    { name: 'Tetris (2D/3D)', path: '/tetris', icon: Layers },
-    { name: 'Jornada RPG', path: '/jornada', icon: Sparkles },
+    { name: 'Tetris', path: '/tetris', icon: Layers },
+    { name: 'Jornada', path: '/jornada', icon: Sparkles },
     { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
-    { name: 'Conquistas', path: '/conquistas', icon: Sparkles },
   ]
 
   const handleLogout = () => {
@@ -216,6 +216,13 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-extrabold text-[#795548]">
+          <Link
+            to="/mundo"
+            className="hover:text-[#8BC34A] transition-colors font-black text-[#2E7D32]"
+          >
+            🌍 Mundo RPG
+          </Link>
+          <span>•</span>
           <Link to="/fazenda" className="hover:text-[#8BC34A] transition-colors">
             🚜 Fazenda Encantada
           </Link>

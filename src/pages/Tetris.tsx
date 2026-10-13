@@ -697,7 +697,7 @@ export default function Tetris() {
             </div>
 
             {/* 3D Canvas Area */}
-            <div className="relative rounded-3xl overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl bg-[#0F081D]">
+            <div className="relative rounded-3xl overflow-hidden border-2 border-[#3E2723]/10 shadow-2xl bg-gradient-to-b from-[#0F081D] via-[#1A0E30] to-[#0D061A]">
               <canvas
                 ref={canvasRef}
                 width={800}
@@ -705,11 +705,11 @@ export default function Tetris() {
                 className="w-full h-[380px] sm:h-[480px] block cursor-grab active:cursor-grabbing touch-none"
               />
 
-              {/* Orbit hint label */}
-              <div className="absolute top-3 left-3 px-3 py-1 bg-black/40 backdrop-blur-xs rounded-xl text-white text-[11px] font-bold pointer-events-none">
-                🖱️ Arraste para orbitar a câmera 3D
+              {/* Orbit hint label with Mobile touch mention */}
+              <div className="absolute top-3 left-3 px-3 py-1.5 bg-black/50 backdrop-blur-xs rounded-xl text-white text-[11px] font-black pointer-events-none flex items-center gap-1.5 border border-white/10">
+                <span>🕹️</span>
+                <span>Arraste com o dedo ou mouse para orbitar em 360°</span>
               </div>
-
               {/* Idle Overlay */}
               {gameState3D === 'idle' && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center animate-fade-in">

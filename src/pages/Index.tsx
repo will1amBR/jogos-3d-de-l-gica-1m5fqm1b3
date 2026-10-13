@@ -54,13 +54,25 @@ export default function Index() {
 
   const games = [
     {
+      id: 'mundo',
+      title: 'Mundo RPG Andável',
+      type: 'farm' as const,
+      route: '/mundo',
+      icon: Sparkles,
+      description:
+        'Ande com seu personagem pelos cenários, colete soja no chão, asse pão e atenda clientes da vila para faturar ouro e contratar ajudantes!',
+      tags: ['RPG Andável', 'Soja → Pão', 'Clientes NPCs'],
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-black',
+      actionText: 'Explorar Mundo RPG',
+    },
+    {
       id: 'fazenda',
-      title: 'Fazenda Encantada',
+      title: 'Fazenda Encantada 3D',
       type: 'farm' as const,
       route: '/fazenda',
       icon: Tractor,
       description:
-        'Cultive sementes mágicas, gerencie seu terreno em 3D e lucre com as flutuações de mercado diárias.',
+        'Cultive sementes mágicas (soja, milho, cenoura, trigo), gerencie seu terreno isométrico e atenda pedidos da cidade.',
       tags: ['Colheita', 'Economia', 'Expansão'],
       badgeColor: 'bg-emerald-100 text-emerald-800',
       actionText: 'Ir para a Fazenda',
@@ -167,7 +179,23 @@ export default function Index() {
         </div>
 
         {/* Quick RPG Navigation Shortcuts */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <Link
+            to="/mundo"
+            className="group bg-[#F1F8E9] border-2 border-[#8BC34A] rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#689F38] transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#8BC34A] text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                🚶
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#2E7D32]">Mundo RPG Andável</h3>
+                <p className="text-xs text-[#795548] font-bold">Ande, colete soja & venda</p>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5 text-[#2E7D32] group-hover:translate-x-1 transition-transform" />
+          </Link>
+
           <Link
             to="/jornada"
             className="group bg-[#FFF9F0] border-2 border-[#8BC34A]/40 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#8BC34A] transition-all flex items-center justify-between"

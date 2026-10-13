@@ -63,18 +63,56 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
       time += 0.03
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Background pastoral hill gradient (warm green Township style)
+      // Background pastoral sky & soft rolling hills gradient
       const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-      gradient.addColorStop(0, '#E8F5E9')
-      gradient.addColorStop(1, '#C8E6C9')
+      gradient.addColorStop(0, '#E3F2FD') // soft morning sky
+      gradient.addColorStop(0.35, '#F1F8E9') // horizon glow
+      gradient.addColorStop(1, '#C8E6C9') // lush valley
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Main field lawn island
-      ctx.fillStyle = '#A5D6A7'
+      // Decorative fluffy clouds in the sky
+      for (let c = 0; c < 3; c++) {
+        const cloudX = ((time * 12 + c * 300) % (canvas.width + 120)) - 60
+        const cloudY = 30 + c * 25
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'
+        ctx.beginPath()
+        ctx.arc(cloudX, cloudY, 18, 0, Math.PI * 2)
+        ctx.arc(cloudX + 16, cloudY - 6, 22, 0, Math.PI * 2)
+        ctx.arc(cloudX + 34, cloudY, 18, 0, Math.PI * 2)
+        ctx.fill()
+      }
+
+      // Background gentle hills
+      ctx.fillStyle = '#C8E6C9'
+      ctx.beginPath()
+      ctx.ellipse(canvas.width * 0.25, 140, 260, 70, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.fillStyle = '#B9F6CA'
+      ctx.beginPath()
+      ctx.ellipse(canvas.width * 0.75, 130, 280, 80, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Main field lawn island with subtle 3D earth rim
+      ctx.fillStyle = '#795548' // earth base rim
+      ctx.beginPath()
+      ctx.ellipse(originX, originY + 126, 372, 202, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      ctx.fillStyle = '#A5D6A7' // grass surface
       ctx.beginPath()
       ctx.ellipse(originX, originY + 120, 370, 200, 0, 0, Math.PI * 2)
       ctx.fill()
+
+      // Cute small flowers scattered on grass
+      for (let f = 0; f < 8; f++) {
+        const fx = originX + Math.cos(f * 0.8) * (260 + (f % 3) * 30)
+        const fy = originY + 120 + Math.sin(f * 0.8) * (130 + (f % 2) * 20)
+        ctx.fillStyle = f % 2 === 0 ? '#FFF176' : '#F48FB1'
+        ctx.beginPath()
+        ctx.arc(fx, fy, 2.5, 0, Math.PI * 2)
+        ctx.fill()
+      }
 
       const now = Date.now()
 

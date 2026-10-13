@@ -8,6 +8,7 @@ import Layout from './components/Layout'
 
 // Game and Hub Pages
 import Index from './pages/Index'
+import Mundo from './pages/Mundo'
 import Fazenda from './pages/Fazenda'
 import Fabrica from './pages/Fabrica'
 import Tetris from './pages/Tetris'
@@ -33,6 +34,7 @@ const App = () => (
           {/* Main App Layout */}
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
+            <Route path="/mundo" element={<Mundo />} />
             <Route path="/fazenda" element={<Fazenda />} />
             <Route path="/fabrica" element={<Fabrica />} />
             <Route path="/tetris" element={<Tetris />} />
