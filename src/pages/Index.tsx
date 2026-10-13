@@ -16,6 +16,7 @@ import {
   Wrench,
   Trophy,
   PackageCheck,
+  Spade,
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AuthGate } from '@/components/AuthGate'
@@ -75,6 +76,30 @@ export default function Index() {
       tags: ['Lógica', 'Prateleira 3D', 'Water Sort'],
       badgeColor: 'bg-cyan-100 text-cyan-800',
       actionText: 'Jogar Garrafas',
+    },
+    {
+      id: 'spider',
+      title: 'Paciência Spider',
+      type: 'spider' as const,
+      route: '/spider',
+      icon: Spade,
+      description:
+        'Clássico de 10 colunas e 104 cartas. Organize sequências perfeitas K→A no mesmo naipe (1, 2 ou 4 naipes) com desfazer ilimitado e dicas!',
+      tags: ['Paciência', 'Estratégia', '1/2/4 Naipes'],
+      badgeColor: 'bg-amber-100 text-amber-900',
+      actionText: 'Jogar Spider',
+    },
+    {
+      id: 'mahjong',
+      title: 'Mahjong Solitaire',
+      type: 'mahjong' as const,
+      route: '/mahjong',
+      icon: Brain,
+      description:
+        'Estilo Vita Mahjong com peças grandes, alto contraste e relevo 3D. Combine pares livres para limpar a mesa e treinar sua memória!',
+      tags: ['Memória', 'Cérebro', '3D Relevo'],
+      badgeColor: 'bg-emerald-100 text-emerald-900',
+      actionText: 'Jogar Mahjong',
     },
     {
       id: 'tetris',
@@ -300,12 +325,12 @@ export default function Index() {
             <div>
               <h2 className="text-2xl sm:text-3xl font-black text-[#3E2723]">Escolha seu Jogo</h2>
               <p className="text-xs sm:text-sm text-[#795548] font-bold">
-                Todos os 3 jogos alimentam seu ouro e nível compartilhado.
+                Todos os 5 jogos alimentam seu ouro e nível compartilhado.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {games.map((game) => {
               const Icon = game.icon
               const isHovered = hoveredGame === game.id

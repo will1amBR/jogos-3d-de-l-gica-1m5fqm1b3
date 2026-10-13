@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 interface Game3DPreviewProps {
-  type: 'farm' | 'bottle' | 'tetris'
+  type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong'
   isHovered: boolean
 }
 
@@ -229,6 +229,173 @@ export const Game3DPreview: React.FC<Game3DPreviewProps> = ({ type, isHovered })
         // Blue line cube
         drawVoxel(1, 2, -1, '#03A9F4')
         drawVoxel(0, 2, -1, '#03A9F4')
+
+        ctx.restore()
+      } else if (type === 'spider') {
+        // Draw 3D Isometric Spider Solitaire Cards Fan & Sequence
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Green felt base oval
+        ctx.fillStyle = '#1B5E20'
+        ctx.beginPath()
+        ctx.ellipse(0, 30, 80, 26, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#2E7D32'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        // 3 layered cards fanning out in 3D perspective
+        const cardOffsets = [
+          {
+            x: -35,
+            y: -25,
+            rot: -0.25 + Math.sin(angle) * 0.05,
+            label: 'K',
+            suit: '♠',
+            color: '#212121',
+          },
+          {
+            x: 0,
+            y: -30 + Math.sin(angle * 2) * 4,
+            rot: Math.sin(angle) * 0.03,
+            label: 'Q',
+            suit: '♥',
+            color: '#D32F2F',
+          },
+          {
+            x: 35,
+            y: -25,
+            rot: 0.25 + Math.cos(angle) * 0.05,
+            label: 'J',
+            suit: '♠',
+            color: '#212121',
+          },
+        ]
+
+        cardOffsets.forEach((c) => {
+          ctx.save()
+          ctx.translate(c.x, c.y)
+          ctx.rotate(c.rot)
+
+          // Card shadow
+          ctx.fillStyle = 'rgba(0,0,0,0.35)'
+          ctx.beginPath()
+          ctx.roundRect(-22, -30 + 10, 44, 62, 6)
+          ctx.fill()
+
+          // Card body
+          ctx.fillStyle = '#FFFFFF'
+          ctx.strokeStyle = '#BDBDBD'
+          ctx.lineWidth = 1.5
+          ctx.beginPath()
+          ctx.roundRect(-22, -30, 44, 62, 6)
+          ctx.fill()
+          ctx.stroke()
+
+          // Card text
+          ctx.fillStyle = c.color
+          ctx.font = 'bold 12px sans-serif'
+          ctx.textAlign = 'left'
+          ctx.fillText(c.label, -16, -16)
+          ctx.fillText(c.suit, -16, -4)
+
+          // Center large suit
+          ctx.font = '20px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText(c.suit, 0, 14)
+
+          ctx.restore()
+        })
+
+        // Little spider badge in bottom right corner
+        ctx.fillStyle = '#FFB74D'
+        ctx.beginPath()
+        ctx.arc(45, 20, 12, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#3E2723'
+        ctx.font = '12px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('🕷️', 45, 24)
+
+        ctx.restore()
+      } else if (type === 'mahjong') {
+        // Draw 3D Stacked Vita Mahjong Porcelain Tiles with Jade backing
+        ctx.save()
+        ctx.translate(cx, cy + 5)
+
+        // Green velvet mat base
+        ctx.fillStyle = '#1E3F24'
+        ctx.beginPath()
+        ctx.ellipse(0, 32, 75, 24, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // 3D Isometric Tile drawing function
+        const drawMahjongTile = (
+          tx: number,
+          ty: number,
+          layer: number,
+          symbol: string,
+          color: string,
+          sub: string,
+        ) => {
+          const lX = layer * -3
+          const lY = layer * -5
+          const x = tx + lX
+          const y = ty + lY
+
+          // 3D Shadow
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'
+          ctx.beginPath()
+          ctx.roundRect(x - 18 + 5, y - 24 + 7, 36, 48, 6)
+          ctx.fill()
+
+          // Green Jade back/sides
+          ctx.fillStyle = '#1B5E20'
+          ctx.beginPath()
+          ctx.roundRect(x - 18 + 3, y - 24 + 4, 36, 48, 6)
+          ctx.fill()
+
+          // Bone / Porcelain side
+          ctx.fillStyle = '#C7BAA7'
+          ctx.beginPath()
+          ctx.roundRect(x - 18 + 1.5, y - 24 + 2, 36, 48, 6)
+          ctx.fill()
+
+          // Front Ivory Face
+          ctx.fillStyle = '#FFFDF9'
+          ctx.strokeStyle = '#D7CCC8'
+          ctx.lineWidth = 1.2
+          ctx.beginPath()
+          ctx.roundRect(x - 18, y - 24, 36, 48, 6)
+          ctx.fill()
+          ctx.stroke()
+
+          // Symbol
+          ctx.fillStyle = color
+          ctx.textAlign = 'center'
+          ctx.font = 'bold 15px sans-serif'
+          ctx.fillText(symbol, x, y + 2)
+
+          // Sublabel
+          ctx.font = 'bold 8px sans-serif'
+          ctx.fillText(sub, x, y + 14)
+        }
+
+        // Animated bob
+        const bob = Math.sin(angle * 2) * 3
+
+        // Layer 0: Two bottom tiles
+        drawMahjongTile(-26, 0, 0, '🎋', '#2E7D32', 'BAMBU')
+        drawMahjongTile(26, 0, 0, '🔵', '#0288D1', 'PONTO')
+
+        // Layer 1: Stacked top tile (floating slightly with hover)
+        drawMahjongTile(0, -10 + bob, 1, '🌸', '#E91E63', 'FLOR')
+
+        // Sparkle icon
+        ctx.fillStyle = '#FFD54F'
+        ctx.font = '12px sans-serif'
+        ctx.fillText('✨', 35 + Math.sin(angle) * 3, -25)
 
         ctx.restore()
       }

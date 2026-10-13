@@ -11,6 +11,7 @@ import {
   LogOut,
   Gamepad2,
   TrendingUp,
+  Spade,
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
@@ -31,11 +32,13 @@ export const Navbar: React.FC = () => {
   const navLinks = [
     { name: 'Central do Hub', path: '/', icon: Gamepad2 },
     { name: 'Fazenda Encantada', path: '/fazenda', icon: Tractor },
+    { name: 'Paciência Spider', path: '/spider', icon: Spade },
+    { name: 'Mahjong Solitaire', path: '/mahjong', icon: Sparkles },
+    { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
+    { name: 'Tetris (2D/3D)', path: '/tetris', icon: Layers },
     { name: 'Jornada RPG', path: '/jornada', icon: Sparkles },
     { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
     { name: 'Conquistas', path: '/conquistas', icon: Sparkles },
-    { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
-    { name: 'Tetris (2D/3D)', path: '/tetris', icon: Layers },
   ]
 
   const handleLogout = () => {
@@ -217,24 +220,32 @@ export const Footer: React.FC = () => {
             🚜 Fazenda Encantada
           </Link>
           <span>•</span>
+          <Link to="/spider" className="hover:text-[#8BC34A] transition-colors">
+            🕷️ Paciência Spider
+          </Link>
+          <span>•</span>
+          <Link to="/mahjong" className="hover:text-[#8BC34A] transition-colors">
+            🀄 Mahjong Solitaire
+          </Link>
+          <span>•</span>
+          <Link to="/fabrica" className="hover:text-[#8BC34A] transition-colors">
+            🧪 Garrafas
+          </Link>
+          <span>•</span>
+          <Link to="/tetris" className="hover:text-[#8BC34A] transition-colors">
+            🧱 Tetris (2D/3D)
+          </Link>
+          <span>•</span>
           <Link to="/jornada" className="hover:text-[#8BC34A] transition-colors">
             🗺️ Jornada RPG
           </Link>
           <span>•</span>
           <Link to="/melhorias" className="hover:text-[#8BC34A] transition-colors">
-            ⚡ Loja de Melhorias
+            ⚡ Melhorias
           </Link>
           <span>•</span>
           <Link to="/conquistas" className="hover:text-[#8BC34A] transition-colors">
-            🏆 Conquistas & Ranking
-          </Link>
-          <span>•</span>
-          <Link to="/fabrica" className="hover:text-[#8BC34A] transition-colors">
-            🧪 Fábrica
-          </Link>
-          <span>•</span>
-          <Link to="/tetris" className="hover:text-[#8BC34A] transition-colors">
-            🧱 Tetris 3D
+            🏆 Conquistas
           </Link>
         </div>
 
