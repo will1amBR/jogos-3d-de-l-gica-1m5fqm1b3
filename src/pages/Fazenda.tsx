@@ -269,9 +269,9 @@ export default function Fazenda() {
 
   return (
     <AuthGate>
-      <div className="space-y-6 pb-12 animate-fade-in">
+      <div className="space-y-3 pb-6 animate-fade-in max-w-full">
         {/* Navigation & Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button

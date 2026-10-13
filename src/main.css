@@ -126,6 +126,81 @@
     }
   }
 
+  /* Animação de encaixe suave de carta no Spider */
+  @keyframes card-snap-glow {
+    0% {
+      transform: scale(1.08) translateY(-4px);
+      box-shadow:
+        0 0 0 3px #fbbf24,
+        0 10px 25px rgba(245, 158, 11, 0.45);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow:
+        0 0 0 2px #34d399,
+        0 6px 18px rgba(52, 211, 153, 0.35);
+    }
+    100% {
+      transform: scale(1) translateY(0);
+      box-shadow: none;
+    }
+  }
+
+  /* Sequência K->A concluída voando para a pilha de vitória */
+  @keyframes run-celebrate-fly {
+    0% {
+      transform: scale(1) translateY(0) rotate(0deg);
+      opacity: 1;
+      filter: drop-shadow(0 0 12px rgba(251, 191, 36, 0.9));
+    }
+    30% {
+      transform: scale(1.15) translateY(-24px) rotate(-3deg);
+      filter: drop-shadow(0 0 24px rgba(251, 191, 36, 1));
+    }
+    70% {
+      transform: scale(0.85) translateY(-60px) rotate(6deg);
+      opacity: 0.8;
+    }
+    100% {
+      transform: scale(0.4) translateY(-120px) rotate(12deg);
+      opacity: 0;
+    }
+  }
+
+  /* Mahjong: par casado deslizando e sumindo suavemente com brilho de jade */
+  @keyframes mahjong-match-sparkle {
+    0% {
+      transform: scale(1.12);
+      box-shadow:
+        0 0 20px #f59e0b,
+        0 0 30px #10b981;
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.18) rotate(2deg);
+      box-shadow:
+        0 0 35px #fbbf24,
+        0 0 45px #34d399;
+      opacity: 0.85;
+    }
+    100% {
+      transform: scale(0.3) rotate(-8deg);
+      opacity: 0;
+    }
+  }
+
+  .animate-card-snap {
+    animation: card-snap-glow 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-run-fly {
+    animation: run-celebrate-fly 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .animate-mahjong-match {
+    animation: mahjong-match-sparkle 0.5s ease-out forwards;
+  }
+
   .animate-float-slow {
     animation: float-slow 4s ease-in-out infinite;
   }

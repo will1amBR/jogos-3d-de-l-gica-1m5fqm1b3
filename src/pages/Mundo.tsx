@@ -764,9 +764,9 @@ export default function Mundo() {
 
   return (
     <AuthGate>
-      <div className="space-y-4 pb-12 animate-fade-in select-none">
+      <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button
@@ -884,7 +884,7 @@ export default function Mundo() {
           <canvas
             ref={canvasRef}
             width={900}
-            height={520}
+            height={460}
             onClick={(e) => handleCanvasInteraction(e.clientX, e.clientY)}
             onTouchStart={(e) => {
               if (e.touches.length > 0) {
@@ -892,7 +892,7 @@ export default function Mundo() {
                 handleCanvasInteraction(t.clientX, t.clientY)
               }
             }}
-            className="w-full h-[380px] sm:h-[520px] block cursor-pointer touch-none"
+            className="w-full h-[300px] sm:h-[420px] block cursor-pointer touch-none"
           />
 
           {/* On-screen touch guidance pill */}

@@ -404,13 +404,16 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
   }, [onPlotClick, dailyMultiplier, workersCount, hasBakery])
 
   return (
-    <div className="relative w-full overflow-hidden rounded-3xl border-2 border-[#3E2723]/10 shadow-lg bg-[#E8F5E9]">
+    <div className="relative w-full overflow-hidden rounded-3xl border-2 border-[#3E2723]/10 shadow-lg bg-[#E8F5E9] group">
       <canvas
         ref={canvasRef}
         width={900}
-        height={480}
-        className="w-full h-[360px] sm:h-[480px] cursor-pointer touch-none block"
+        height={440}
+        className="w-full h-[300px] sm:h-[420px] cursor-pointer touch-none block"
       />
+      {/* Decorative ambient 3D sunbeam effect */}
+      <div className="absolute -top-16 -right-16 w-48 h-48 bg-amber-300/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none" />
     </div>
   )
 }

@@ -179,69 +179,90 @@ export default function Index() {
         </div>
 
         {/* Quick RPG Navigation Shortcuts */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
           <Link
             to="/mundo"
-            className="group bg-[#F1F8E9] border-2 border-[#8BC34A] rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#689F38] transition-all flex items-center justify-between"
+            className="group bg-[#F1F8E9] border-2 border-[#8BC34A] rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-[#689F38] transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#8BC34A] text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-[#8BC34A] text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                 🚶
               </div>
               <div>
-                <h3 className="text-base font-black text-[#2E7D32]">Mundo RPG Andável</h3>
-                <p className="text-xs text-[#795548] font-bold">Ande, colete soja & venda</p>
+                <h3 className="text-sm font-black text-[#2E7D32]">Mundo RPG</h3>
+                <p className="text-[11px] text-[#795548] font-bold">Ande & colete</p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-[#2E7D32] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-[#2E7D32] group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+          <Link
+            to="/objetivos"
+            className="group bg-gradient-to-br from-amber-50 to-orange-50 border-2 border-amber-400 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-amber-500 transition-all flex items-center justify-between ring-2 ring-amber-300/40"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-2xl group-hover:scale-110 transition-transform shadow-xs">
+                🎯
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <h3 className="text-sm font-black text-amber-950">Meus Objetivos</h3>
+                  <span className="text-[9px] font-black uppercase bg-amber-400 text-stone-900 px-1 rounded-sm">
+                    Novo!
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800 font-bold">Metas do Jogador</p>
+              </div>
+            </div>
+            <ArrowRight className="w-4 h-4 text-amber-700 group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
             to="/jornada"
-            className="group bg-[#FFF9F0] border-2 border-[#8BC34A]/40 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#8BC34A] transition-all flex items-center justify-between"
+            className="group bg-[#FFF9F0] border-2 border-[#8BC34A]/40 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-[#8BC34A] transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                 🗺️
               </div>
               <div>
-                <h3 className="text-base font-black text-[#3E2723]">Jornada & Mapa RPG</h3>
-                <p className="text-xs text-[#795548] font-bold">8 Lugares desbloqueáveis</p>
+                <h3 className="text-sm font-black text-[#3E2723]">Jornada RPG</h3>
+                <p className="text-[11px] text-[#795548] font-bold">8 Lugares no mapa</p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-[#8BC34A] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-[#8BC34A] group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
             to="/melhorias"
-            className="group bg-[#FFF9F0] border-2 border-[#FF9800]/40 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-[#FF9800] transition-all flex items-center justify-between"
+            className="group bg-[#FFF9F0] border-2 border-[#FF9800]/40 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-[#FF9800] transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                 ⚡
               </div>
               <div>
-                <h3 className="text-base font-black text-[#3E2723]">Loja de Melhorias</h3>
-                <p className="text-xs text-[#795548] font-bold">Ferramentas, forno e bônus</p>
+                <h3 className="text-sm font-black text-[#3E2723]">Melhorias</h3>
+                <p className="text-[11px] text-[#795548] font-bold">Forno & Ferramentas</p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-[#FF9800] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-[#FF9800] group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
             to="/conquistas"
-            className="group bg-[#FFF9F0] border-2 border-purple-300 rounded-3xl p-5 shadow-sm hover:shadow-md hover:border-purple-400 transition-all flex items-center justify-between"
+            className="group bg-[#FFF9F0] border-2 border-purple-300 rounded-3xl p-4 shadow-sm hover:shadow-md hover:border-purple-400 transition-all flex items-center justify-between"
           >
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-purple-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+              <div className="w-11 h-11 rounded-2xl bg-purple-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                 🏆
               </div>
               <div>
-                <h3 className="text-base font-black text-[#3E2723]">Conquistas & Ranking</h3>
-                <p className="text-xs text-[#795548] font-bold">Prêmios em moedas e placar</p>
+                <h3 className="text-sm font-black text-[#3E2723]">Conquistas</h3>
+                <p className="text-[11px] text-[#795548] font-bold">Prêmios & Ranking</p>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5 text-[#5E35B1] group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="w-4 h-4 text-[#5E35B1] group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
 

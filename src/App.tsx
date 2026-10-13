@@ -5,6 +5,7 @@ import { Toaster as Sonner } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { GameProvider } from '@/context/GameContext'
 import Layout from './components/Layout'
+import { ScrollToTop } from './components/ScrollToTop'
 
 // Game and Hub Pages
 import Index from './pages/Index'
@@ -17,6 +18,7 @@ import Mahjong from './pages/Mahjong'
 import Jornada from './pages/Jornada'
 import Melhorias from './pages/Melhorias'
 import Conquistas from './pages/Conquistas'
+import { Objetivos } from './pages/Objetivos'
 
 // Auth Pages
 import ForgotPassword from './pages/ForgotPassword'
@@ -26,6 +28,7 @@ import NotFound from './pages/NotFound'
 
 const App = () => (
   <BrowserRouter>
+    <ScrollToTop />
     <GameProvider>
       <TooltipProvider>
         <Toaster />
@@ -43,6 +46,7 @@ const App = () => (
             <Route path="/jornada" element={<Jornada />} />
             <Route path="/melhorias" element={<Melhorias />} />
             <Route path="/conquistas" element={<Conquistas />} />
+            <Route path="/objetivos" element={<Objetivos />} />
             <Route path="/recuperar-senha" element={<ForgotPassword />} />
             <Route path="/redefinir-senha" element={<ResetPassword />} />
             <Route path="/verificar-email" element={<VerifyEmail />} />

@@ -153,6 +153,15 @@ export default function Spider() {
     toCol: number
   } | null>(null)
 
+  // Feedback animation when a card sequence snaps onto a destination column
+  const [lastMovedCol, setLastMovedCol] = useState<number | null>(null)
+
+  // Celebration state when a K->A run is completed
+  const [celebratingRun, setCelebratingRun] = useState<{
+    suit: Suit
+    key: number
+  } | null>(null)
+
   // Undo history
   const [history, setHistory] = useState<SpiderHistoryState[]>([])
 
@@ -432,12 +441,14 @@ export default function Spider() {
     if (newCompletedSuit) {
       playSound('run')
       setCompletedRuns((prev) => [...prev, newCompletedSuit!])
+      setCelebratingRun({ suit: newCompletedSuit, key: Date.now() })
       setScore((s) => s + 100)
       toast({
         title: '🎉 Sequência K → A Completa!',
         description: `Sequência de ${SUIT_SYMBOLS[newCompletedSuit]} removida com sucesso! (+100 pontos)`,
         className: 'bg-emerald-50 border-emerald-400 text-emerald-950 font-black',
       })
+      setTimeout(() => setCelebratingRun(null), 2500)
     } else {
       playSound('deal')
     }
@@ -503,9 +514,12 @@ export default function Spider() {
     setScore((s) => Math.max(0, s - 1) + (completedSuit ? 100 : 0))
     setSelected(null)
     setHint(null)
+    setLastMovedCol(toCol)
+    setTimeout(() => setLastMovedCol(null), 600)
 
     if (completedSuit) {
       playSound('run')
+      setCelebratingRun({ suit: completedSuit, key: Date.now() })
       setCompletedRuns((prev) => {
         const next = [...prev, completedSuit!]
         if (next.length === 8) {
@@ -519,6 +533,7 @@ export default function Spider() {
         description: `Sequência de ${SUIT_SYMBOLS[completedSuit]} removida do tabuleiro! (+100 pontos)`,
         className: 'bg-emerald-50 border-emerald-400 text-emerald-950 font-black',
       })
+      setTimeout(() => setCelebratingRun(null), 2500)
     } else {
       playSound('card')
     }
@@ -716,19 +731,19 @@ export default function Spider() {
 
   // Pre-calculate column height in pixels to avoid layout thrashing
   const getColumnHeight = useCallback((col: Card[]) => {
-    if (col.length === 0) return 380
+    if (col.length === 0) return 320
     let total = 0
     for (let i = 0; i < col.length; i++) {
-      total += col[i].faceUp ? 22 : 12
+      total += col[i].faceUp ? 18 : 10
     }
-    return Math.max(380, total + 70)
+    return Math.max(320, total + 60)
   }, [])
 
   return (
     <AuthGate>
-      <div className="space-y-4 pb-12 animate-fade-in select-none">
+      <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
         {/* Header / Navigation */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button
@@ -904,8 +919,28 @@ export default function Spider() {
           </div>
         )}
 
-        {/* Felt Spider Playfield */}
-        <div className="relative rounded-3xl bg-gradient-to-b from-[#1b5e20] via-[#2e7d32] to-[#1e6b23] border-4 border-[#33691E] p-2.5 sm:p-5 shadow-2xl min-h-[580px] overflow-hidden">
+        {/* Celebration Banner when a K->A Run is completed */}
+        {celebratingRun && (
+          <div className="relative overflow-hidden bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-500 text-stone-900 font-black px-4 py-2.5 rounded-2xl shadow-xl flex items-center justify-between border-2 border-white animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl animate-spin">✨</span>
+              <span className="text-sm sm:text-base">
+                Sequência Completa de{' '}
+                <strong className="text-black uppercase">
+                  {celebratingRun.suit} {SUIT_SYMBOLS[celebratingRun.suit]}
+                </strong>{' '}
+                (K → A) voando para o cofre! +100 Pontos!
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-xs bg-white/80 px-2 py-1 rounded-xl shadow-xs">
+              <Sparkles className="w-4 h-4 text-amber-600 animate-pulse" />
+              <span>Brilho Triplo!</span>
+            </div>
+          </div>
+        )}
+
+        {/* Felt Spider Playfield - Compact responsive container */}
+        <div className="relative rounded-3xl bg-gradient-to-b from-[#1b5e20] via-[#2e7d32] to-[#1e6b23] border-4 border-[#33691E] p-2 sm:p-4 shadow-2xl overflow-hidden">
           {/* Subtle wood / felt texture border & sheen */}
           <div className="absolute inset-0 bg-radial from-transparent to-black/25 pointer-events-none" />
 
@@ -1006,7 +1041,7 @@ export default function Spider() {
               let currentTop = 0
               const offsets = col.map((c) => {
                 const top = currentTop
-                currentTop += c.faceUp ? 22 : 12
+                currentTop += c.faceUp ? 18 : 10
                 return top
               })
 
@@ -1035,6 +1070,7 @@ export default function Spider() {
                     const isSelected =
                       selected?.colIndex === colIdx && cardIdx >= selected.cardIndex
                     const isHintSource = isColSourceOfHint && cardIdx === hint?.fromCardIdx
+                    const isJustSnapped = lastMovedCol === colIdx && cardIdx === col.length - 1
                     const topOffset = offsets[cardIdx]
 
                     return (
@@ -1048,18 +1084,21 @@ export default function Spider() {
                           top: `${topOffset}px`,
                           zIndex: cardIdx + 1,
                         }}
-                        className={`absolute left-0 right-0 rounded-lg sm:rounded-xl shadow-xs transition-transform duration-100 cursor-pointer touch-manipulation ${
+                        className={`absolute left-0 right-0 rounded-lg sm:rounded-xl shadow-xs transition-transform duration-150 cursor-pointer touch-manipulation ${
                           card.faceUp
                             ? 'bg-white border'
                             : 'bg-gradient-to-br from-[#1E88E5] to-[#0D47A1] border border-white/80'
                         } ${
                           isSelected
-                            ? 'ring-2 ring-amber-400 border-amber-500 scale-[1.04] shadow-md z-30'
-                            : card.faceUp
-                              ? 'border-[#BDBDBD] hover:border-[#8BC34A]'
-                              : 'hover:brightness-105'
+                            ? 'ring-3 ring-amber-400 border-amber-500 scale-[1.05] shadow-lg z-30'
+                            : isJustSnapped
+                              ? 'animate-card-snap ring-2 ring-emerald-400'
+                              : card.faceUp
+                                ? 'border-[#BDBDBD] hover:border-[#8BC34A] hover:scale-[1.02]'
+                                : 'hover:brightness-105'
                         } ${isHintSource ? 'ring-2 ring-yellow-300 animate-pulse' : ''}`}
                       >
+                        {' '}
                         {card.faceUp ? (
                           // Face Up Card Content
                           <div

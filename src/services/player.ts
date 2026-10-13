@@ -10,6 +10,7 @@ import type {
   PlayerPlaceRecord,
   PlayerAchievementRecord,
   CustomerOrderRecord,
+  PlayerObjectiveRecord,
 } from '@/types/game'
 import { UPGRADES } from '@/types/game'
 
@@ -423,5 +424,54 @@ export async function fetchLeaderboard(limit: number = 30): Promise<PlayerRecord
   } catch (err) {
     console.error('Error fetching leaderboard:', err)
     return []
+  }
+}
+
+// --- PLAYER OBJECTIVES (Objetivos Pessoais) ---
+export async function fetchPlayerObjectives(playerId: string): Promise<PlayerObjectiveRecord[]> {
+  try {
+    const records = await pb.collection<PlayerObjectiveRecord>('player_objectives').getFullList({
+      filter: `player = "${playerId}"`,
+      sort: 'completed,created',
+    })
+    return records
+  } catch (err) {
+    console.error('Error fetching player objectives:', err)
+    return []
+  }
+}
+
+export async function createPlayerObjective(data: {
+  player: string
+  title: string
+  metric_type?: string
+  target_value?: number
+  completed?: boolean
+  notes?: string
+}): Promise<PlayerObjectiveRecord> {
+  return await pb.collection<PlayerObjectiveRecord>('player_objectives').create({
+    player: data.player,
+    title: data.title,
+    metric_type: data.metric_type || 'custom',
+    target_value: data.target_value ?? 0,
+    completed: data.completed ?? false,
+    notes: data.notes || '',
+  })
+}
+
+export async function updatePlayerObjective(
+  objectiveId: string,
+  data: Partial<PlayerObjectiveRecord>,
+): Promise<PlayerObjectiveRecord> {
+  return await pb.collection<PlayerObjectiveRecord>('player_objectives').update(objectiveId, data)
+}
+
+export async function deletePlayerObjective(objectiveId: string): Promise<boolean> {
+  try {
+    await pb.collection('player_objectives').delete(objectiveId)
+    return true
+  } catch (err) {
+    console.error('Error deleting objective:', err)
+    return false
   }
 }

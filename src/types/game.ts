@@ -485,3 +485,91 @@ export interface CustomerOrderRecord extends RecordModel {
 export function getWorkerHireCost(currentWorkers: number): number {
   return Math.round(150 * Math.pow(currentWorkers + 1, 1.35))
 }
+
+// --- PLAYER OBJECTIVES (Metas pessoais de jogo) ---
+export type ObjectiveMetricType =
+  | 'custom'
+  | 'level'
+  | 'coins'
+  | 'harvests'
+  | 'soja'
+  | 'bread'
+  | 'workers'
+  | 'plots'
+
+export interface PlayerObjectiveRecord extends RecordModel {
+  player: string
+  title: string
+  metric_type?: ObjectiveMetricType
+  target_value?: number
+  completed?: boolean
+  notes?: string
+}
+
+export interface MetricSuggestion {
+  metric: ObjectiveMetricType
+  label: string
+  icon: string
+  unit: string
+  suggestedTargets: number[]
+  getCurrentValue: (p: PlayerRecord) => number
+}
+
+export const METRIC_SUGGESTIONS: MetricSuggestion[] = [
+  {
+    metric: 'level',
+    label: 'Alcançar Nível de Jogador',
+    icon: '👑',
+    unit: 'nível',
+    suggestedTargets: [3, 5, 8, 10, 15, 20],
+    getCurrentValue: (p) => p.level || 1,
+  },
+  {
+    metric: 'coins',
+    label: 'Juntar Moedas de Ouro',
+    icon: '🪙',
+    unit: 'moedas',
+    suggestedTargets: [250, 500, 1000, 2500, 5000],
+    getCurrentValue: (p) => p.coins || 0,
+  },
+  {
+    metric: 'harvests',
+    label: 'Total de Colheitas Feitas',
+    icon: '🌾',
+    unit: 'colheitas',
+    suggestedTargets: [10, 25, 50, 100, 200],
+    getCurrentValue: (p) => p.total_harvests || 0,
+  },
+  {
+    metric: 'soja',
+    label: 'Colher Soja Fresca',
+    icon: '🌱',
+    unit: 'sojas',
+    suggestedTargets: [20, 50, 100, 200],
+    getCurrentValue: (p) => p.total_soja_harvested || 0,
+  },
+  {
+    metric: 'bread',
+    label: 'Entregar Pães aos Moradores',
+    icon: '🥖',
+    unit: 'pães',
+    suggestedTargets: [5, 15, 30, 50, 100],
+    getCurrentValue: (p) => p.total_bread_delivered || 0,
+  },
+  {
+    metric: 'workers',
+    label: 'Contratar Ajudantes na Fazenda',
+    icon: '🧑‍🌾',
+    unit: 'ajudantes',
+    suggestedTargets: [1, 2, 3, 5],
+    getCurrentValue: (p) => p.hired_workers || 0,
+  },
+  {
+    metric: 'plots',
+    label: 'Desbloquear Lotes de Terra',
+    icon: '🚜',
+    unit: 'lotes',
+    suggestedTargets: [12, 18, 24],
+    getCurrentValue: (p) => p.farm_plots_unlocked || 6,
+  },
+]

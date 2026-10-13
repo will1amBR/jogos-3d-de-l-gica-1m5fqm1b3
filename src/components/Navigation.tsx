@@ -12,6 +12,7 @@ import {
   Gamepad2,
   TrendingUp,
   Spade,
+  Target,
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
@@ -37,7 +38,7 @@ export const Navbar: React.FC = () => {
     { name: 'Mahjong', path: '/mahjong', icon: Sparkles },
     { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
     { name: 'Tetris', path: '/tetris', icon: Layers },
-    { name: 'Jornada', path: '/jornada', icon: Sparkles },
+    { name: 'Objetivos', path: '/objetivos', icon: Target },
     { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
   ]
 
@@ -241,6 +242,13 @@ export const Footer: React.FC = () => {
           <span>•</span>
           <Link to="/tetris" className="hover:text-[#8BC34A] transition-colors">
             🧱 Tetris (2D/3D)
+          </Link>
+          <span>•</span>
+          <Link
+            to="/objetivos"
+            className="hover:text-[#8BC34A] transition-colors font-black text-amber-700"
+          >
+            🎯 Meus Objetivos
           </Link>
           <span>•</span>
           <Link to="/jornada" className="hover:text-[#8BC34A] transition-colors">

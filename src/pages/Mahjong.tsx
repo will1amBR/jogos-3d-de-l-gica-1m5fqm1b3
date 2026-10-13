@@ -262,6 +262,7 @@ export default function Mahjong() {
   const [boardSlots, setBoardSlots] = useState<BoardSlot[]>([])
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null)
   const [hintPair, setHintPair] = useState<[string, string] | null>(null)
+  const [matchingPairIds, setMatchingPairIds] = useState<string[]>([])
   const [history, setHistory] = useState<BoardSlot[][]>([])
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [movesCount, setMovesCount] = useState(0)
@@ -588,29 +589,42 @@ export default function Mahjong() {
 
     if (firstSlot.tile.matchGroup === slot.tile.matchGroup) {
       pushHistory()
-
-      const nextSlots = boardSlots.map((s) => {
-        if (s.id === firstSlot.id || s.id === slot.id) {
-          return { ...s, tile: null }
-        }
-        return s
-      })
-
-      setBoardSlots(nextSlots)
-      setSelectedSlotId(null)
-      setMovesCount((m) => m + 1)
       playSound('match')
 
-      const remainingCount = nextSlots.filter((s) => s.tile !== null).length
-      if (remainingCount === 0) {
-        setIsWon(true)
-      } else {
-        toast({
-          title: 'Par Removido!',
-          description: `${slot.tile.subLabel} correspondido! Restam ${remainingCount / 2} pares.`,
-          className: 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold',
+      const p1Id = firstSlot.id
+      const p2Id = slot.id
+      const subLabel = slot.tile.subLabel
+
+      // Ativa efeito visual animado antes de limpar os slots
+      setMatchingPairIds([p1Id, p2Id])
+      setSelectedSlotId(null)
+
+      setTimeout(() => {
+        setBoardSlots((prev) => {
+          const nextSlots = prev.map((s) => {
+            if (s.id === p1Id || s.id === p2Id) {
+              return { ...s, tile: null }
+            }
+            return s
+          })
+
+          const remainingCount = nextSlots.filter((s) => s.tile !== null).length
+          if (remainingCount === 0) {
+            setIsWon(true)
+          } else {
+            toast({
+              title: '✨ Par Removido com Sucesso!',
+              description: `${subLabel} correspondido! Restam ${remainingCount / 2} pares.`,
+              className: 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold',
+            })
+          }
+
+          return nextSlots
         })
-      }
+
+        setMatchingPairIds((prev) => prev.filter((id) => id !== p1Id && id !== p2Id))
+        setMovesCount((m) => m + 1)
+      }, 350)
     } else {
       setSelectedSlotId(slot.id)
       playSound('select')
@@ -715,9 +729,9 @@ export default function Mahjong() {
 
   return (
     <AuthGate>
-      <div className="space-y-4 pb-12 animate-fade-in select-none">
+      <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
         {/* Navegacao e Titulo */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-4 sm:p-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button
@@ -861,16 +875,16 @@ export default function Mahjong() {
         </div>
 
         {/* Tabuleiro 3D Mahjong */}
-        <div className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-2 sm:p-6 shadow-2xl min-h-[540px] flex items-center justify-center overflow-x-auto">
+        <div className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-2 sm:p-4 shadow-2xl min-h-[460px] flex items-center justify-center overflow-x-auto">
           <div className="absolute inset-0 bg-radial from-transparent to-black/35 pointer-events-none rounded-2xl" />
 
           {/* Area do tabuleiro com profundidade 3D em CSS otimizada para mobile */}
           <div
-            className="relative my-2 sm:my-4"
+            className="relative my-1 sm:my-2"
             style={{
-              width: `${(maxCol + 1) * 62}px`,
-              height: `${(maxRow + 1) * 74}px`,
-              minWidth: '320px',
+              width: `${(maxCol + 1) * 56}px`,
+              height: `${(maxRow + 1) * 64}px`,
+              minWidth: '300px',
             }}
           >
             {boardSlots.map((slot) => {
@@ -879,6 +893,7 @@ export default function Mahjong() {
               const isFree = freeTileMap.get(slot.id) || false
               const isSelected = selectedSlotId === slot.id
               const isHinted = hintPair?.includes(slot.id) || false
+              const isMatching = matchingPairIds.includes(slot.id)
 
               const layerZ = slot.layer * 10
               const layerOffsetX = slot.layer * -3
@@ -894,16 +909,18 @@ export default function Mahjong() {
                   style={{
                     left: `${leftPos}px`,
                     top: `${topPos}px`,
-                    zIndex: layerZ + slot.row,
+                    zIndex: layerZ + slot.row + (isSelected ? 50 : 0),
                   }}
-                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-transform duration-100 touch-manipulation active:scale-95 ${
-                    isSelected
-                      ? 'scale-105 ring-3 ring-amber-400 z-40'
-                      : isHinted
-                        ? 'ring-3 ring-yellow-300 animate-pulse'
-                        : isFree
-                          ? 'hover:brightness-105'
-                          : 'opacity-65 cursor-not-allowed'
+                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-transform duration-150 touch-manipulation active:scale-95 ${
+                    isMatching
+                      ? 'animate-mahjong-match z-50'
+                      : isSelected
+                        ? 'scale-110 ring-3 ring-amber-400 shadow-xl z-40'
+                        : isHinted
+                          ? 'ring-3 ring-yellow-300 animate-pulse'
+                          : isFree
+                            ? 'hover:brightness-105 hover:scale-[1.03]'
+                            : 'opacity-65 cursor-not-allowed'
                   }`}
                 >
                   {/* Base de sombra 3D da peca simplificada (sem filtro pesado de drop-shadow) */}

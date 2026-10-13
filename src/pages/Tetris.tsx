@@ -607,9 +607,10 @@ export default function Tetris() {
 
   return (
     <AuthGate>
-      <div className="space-y-6 pb-12 animate-fade-in">
+      <div className="space-y-3 pb-6 animate-fade-in select-none max-w-full">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {' '}
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button
@@ -629,7 +630,6 @@ export default function Tetris() {
               </p>
             </div>
           </div>
-
           {/* Mode Switcher Pill */}
           <div className="flex items-center bg-[#F5EFE6] p-1.5 rounded-2xl border border-[#3E2723]/10">
             <button
@@ -701,8 +701,8 @@ export default function Tetris() {
               <canvas
                 ref={canvasRef}
                 width={800}
-                height={500}
-                className="w-full h-[380px] sm:h-[480px] block cursor-grab active:cursor-grabbing touch-none"
+                height={450}
+                className="w-full h-[320px] sm:h-[420px] block cursor-grab active:cursor-grabbing touch-none"
               />
 
               {/* Orbit hint label with Mobile touch mention */}

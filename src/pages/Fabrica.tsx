@@ -377,9 +377,9 @@ export default function Fabrica() {
 
   return (
     <AuthGate>
-      <div className="space-y-6 pb-12 animate-fade-in">
+      <div className="space-y-3 pb-6 animate-fade-in max-w-full">
         {/* Navigation & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Link to="/">
               <Button
@@ -480,7 +480,7 @@ export default function Fabrica() {
         </div>
 
         {/* MAIN GAME INTERACTIVE AREA: Shelf with 8 bottles + Large Jug Side Station */}
-        <div className="relative bg-gradient-to-b from-[#241711] via-[#35241C] to-[#1C120D] border-4 border-[#3E2723]/30 rounded-3xl p-4 sm:p-8 shadow-2xl overflow-hidden min-h-[460px]">
+        <div className="relative bg-gradient-to-b from-[#241711] via-[#35241C] to-[#1C120D] border-4 border-[#3E2723]/30 rounded-3xl p-3 sm:p-6 shadow-2xl overflow-hidden min-h-[420px]">
           {/* Wooden Shelf Background Graphic Details */}
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#D7CCC8_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
 
@@ -571,11 +571,11 @@ export default function Fabrica() {
 
                         {/* Glass Bottle Body (6-tier cylinder with subtle glass reflections) */}
                         <div
-                          className={`relative w-12 sm:w-14 h-48 sm:h-52 rounded-b-2xl rounded-t-lg border-2 backdrop-blur-xs flex flex-col justify-end p-1 transition-all shadow-lg ${
+                          className={`relative w-11 sm:w-14 h-40 sm:h-48 rounded-b-2xl rounded-t-lg border-2 backdrop-blur-xs flex flex-col justify-end p-1 transition-all shadow-lg ${
                             isSelected
-                              ? 'border-amber-300 ring-4 ring-amber-400/50 bg-white/20'
+                              ? 'border-amber-300 ring-4 ring-amber-400/50 bg-white/20 scale-105'
                               : isCompleted
-                                ? 'border-emerald-400 bg-emerald-950/20'
+                                ? 'border-emerald-400 bg-emerald-950/20 shadow-emerald-500/20'
                                 : 'border-stone-400/60 bg-white/10 hover:border-amber-200'
                           }`}
                         >
