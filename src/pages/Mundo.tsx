@@ -73,8 +73,8 @@ const WORLD_ZONES: WorldZone[] = [
     route: '/fazenda',
     x: 180,
     y: 200,
-    radius: 75,
-    desc: 'Lotes de terra para cultivar milho, abóbora, cenoura e trigo',
+    radius: 125, // raio expandido para ativação confortável
+    desc: 'Lotes de terra para cultivar soja, milho, abóbora, cenoura e trigo',
     badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
   },
   {
@@ -84,7 +84,7 @@ const WORLD_ZONES: WorldZone[] = [
     route: '/fazenda',
     x: 480,
     y: 150,
-    radius: 70,
+    radius: 115,
     desc: 'Transforme soja e trigo em pão quentinho',
     badgeColor: 'bg-orange-100 text-orange-900 border-orange-300',
   },
@@ -95,7 +95,7 @@ const WORLD_ZONES: WorldZone[] = [
     route: '/fazenda',
     x: 720,
     y: 220,
-    radius: 75,
+    radius: 120,
     desc: 'Venda colheitas pelo multiplicador diário',
     badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
   },
@@ -106,7 +106,7 @@ const WORLD_ZONES: WorldZone[] = [
     route: '/jornada',
     x: 750,
     y: 440,
-    radius: 70,
+    radius: 115,
     desc: 'Explore os 8 territórios do reino',
     badgeColor: 'bg-purple-100 text-purple-900 border-purple-300',
   },
@@ -756,11 +756,27 @@ export default function Mundo() {
     return () => cancelAnimationFrame(animId)
   }, [player, harvestCrop, bakeBread, addReward, playSfx])
 
-  // Current zone player is in (if within radius)
-  const activeZone = WORLD_ZONES.find((z) => {
-    const dist = Math.hypot(playerPosRef.current.x - z.x, playerPosRef.current.y - z.y)
-    return dist < z.radius
-  })
+  // Keep track of active zone in React state so re-renders trigger reliably
+  const [activeZone, setActiveZone] = useState<WorldZone | null>(null)
+
+  // Update active zone in sync with player walking
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const p = playerPosRef.current
+      let found: WorldZone | null = null
+      let minDist = Infinity
+
+      for (const zone of WORLD_ZONES) {
+        const d = Math.hypot(p.x - zone.x, p.y - zone.y)
+        if (d < zone.radius && d < minDist) {
+          minDist = d
+          found = zone
+        }
+      }
+      setActiveZone(found)
+    }, 100)
+    return () => clearInterval(interval)
+  }, [])
 
   return (
     <AuthGate>
@@ -902,32 +918,76 @@ export default function Mundo() {
             <span>Toque na Soja 🌱 ou nos Clientes 👥</span>
           </div>
 
-          {/* Active Zone Enter Banner (Bottom of Canvas) */}
+          {/* Active Zone Enter Banner (Bottom of Canvas) - Always visible when near a zone */}
           {activeZone && (
-            <div className="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md border-2 border-[#8BC34A] rounded-2xl p-3 sm:p-4 shadow-xl flex items-center justify-between gap-3 animate-slide-up">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{activeZone.icon}</span>
-                <div>
-                  <div className="text-xs font-black uppercase text-[#2E7D32] tracking-wider">
-                    Você chegou em:
+            <div className="absolute bottom-3 left-3 right-3 sm:bottom-4 sm:left-4 sm:right-4 bg-[#FFF9F0]/95 backdrop-blur-md border-3 border-[#8BC34A] rounded-2xl p-3 sm:p-4 shadow-2xl flex items-center justify-between gap-3 animate-slide-up z-20">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-[#E8F5E9] border-2 border-[#8BC34A] flex items-center justify-center text-2xl sm:text-3xl shrink-0 shadow-xs">
+                  {activeZone.icon}
+                </div>
+                <div className="min-w-0">
+                  <div className="text-[10px] font-black uppercase text-[#2E7D32] tracking-wider flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+                    Portal Aberto:
                   </div>
-                  <h3 className="text-base sm:text-lg font-black text-[#3E2723]">
+                  <h3 className="text-sm sm:text-lg font-black text-[#3E2723] truncate">
                     {activeZone.name}
                   </h3>
-                  <p className="text-xs text-[#795548] font-bold hidden sm:block">
+                  <p className="text-[11px] text-[#795548] font-bold hidden sm:block truncate">
                     {activeZone.desc}
                   </p>
                 </div>
               </div>
 
-              <Link to={activeZone.route}>
-                <Button className="bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black text-xs sm:text-sm py-4 px-5 rounded-xl shadow-md flex items-center gap-1.5 shrink-0">
-                  <span>Entrar no Local</span>
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </Link>
+              <Button
+                onClick={() => navigate(activeZone.route)}
+                className="bg-[#2E7D32] hover:bg-[#1B5E20] text-white font-black text-xs sm:text-sm h-11 sm:h-12 px-4 sm:px-6 rounded-2xl shadow-lg flex items-center gap-1.5 shrink-0 transition-transform active:scale-95 animate-pulse"
+              >
+                <span>Entrar no Cenário</span>
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
             </div>
           )}
+        </div>
+
+        {/* Atalhos Fixos de Acesso Rápido aos Cenários (Fallback garantido para o jogador nunca ficar travado) */}
+        <div className="bg-[#FFF9F0] border-2 border-amber-300 rounded-3xl p-3.5 sm:p-4 shadow-sm">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-[#8BC34A]" />
+              <span className="text-xs sm:text-sm font-black text-[#3E2723]">
+                Portais Rápidos dos Cenários
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-[#795548] bg-amber-100 px-2 py-0.5 rounded-full">
+              Toque direto para navegar
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {WORLD_ZONES.map((zone) => (
+              <button
+                key={zone.id}
+                onClick={() => {
+                  playSfx(523, 784, 0.1)
+                  navigate(zone.route)
+                }}
+                className="flex items-center gap-2.5 p-2.5 rounded-2xl bg-white hover:bg-emerald-50 border-2 border-emerald-200/80 hover:border-[#8BC34A] transition-all text-left shadow-2xs group active:scale-98"
+              >
+                <span className="text-2xl group-hover:scale-110 transition-transform shrink-0">
+                  {zone.icon}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-black text-[#3E2723] group-hover:text-[#2E7D32] truncate">
+                    {zone.name}
+                  </div>
+                  <div className="text-[10px] font-bold text-[#8BC34A] flex items-center gap-0.5">
+                    Entrar <ChevronRight className="w-3 h-3 inline" />
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Quick Instructions / Gameplay Loop Card */}

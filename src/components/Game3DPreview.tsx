@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 
 interface Game3DPreviewProps {
-  type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong'
+  type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong' | 'aeronave' | 'runner'
   isHovered: boolean
 }
 
@@ -396,6 +396,135 @@ export const Game3DPreview: React.FC<Game3DPreviewProps> = ({ type, isHovered })
         ctx.fillStyle = '#FFD54F'
         ctx.font = '12px sans-serif'
         ctx.fillText('✨', 35 + Math.sin(angle) * 3, -25)
+
+        ctx.restore()
+      } else if (type === 'aeronave') {
+        // Draw 3D Styled Space Airship with lasers and orbiting asteroid
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Space/twilight background circle
+        ctx.fillStyle = '#1A237E'
+        ctx.beginPath()
+        ctx.arc(0, 0, 48, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#3949AB'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        // Orbiting rock asteroid
+        const astX = Math.cos(angle * 1.5) * 34
+        const astY = Math.sin(angle * 1.5) * 22
+        ctx.fillStyle = '#8D6E63'
+        ctx.beginPath()
+        ctx.arc(astX, astY, 10, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#FFA000'
+        ctx.fillRect(astX - 3, astY - 3, 3, 3)
+
+        // Lasers firing
+        ctx.fillStyle = '#FFEB3B'
+        ctx.fillRect(-8, -32 + Math.sin(angle * 6) * 6, 2, 10)
+        ctx.fillRect(6, -32 + Math.sin(angle * 6) * 6, 2, 10)
+
+        // Airship
+        const shipBob = Math.sin(angle * 3) * 3
+        ctx.translate(0, 8 + shipBob)
+
+        // Engine fire
+        ctx.fillStyle = '#FF9800'
+        ctx.beginPath()
+        ctx.moveTo(-5, 12)
+        ctx.lineTo(5, 12)
+        ctx.lineTo(0, 22)
+        ctx.closePath()
+        ctx.fill()
+
+        // Ship wings
+        ctx.fillStyle = '#8BC34A'
+        ctx.beginPath()
+        ctx.moveTo(0, -14)
+        ctx.lineTo(-20, 10)
+        ctx.lineTo(0, 4)
+        ctx.lineTo(20, 10)
+        ctx.closePath()
+        ctx.fill()
+        ctx.strokeStyle = '#558B2F'
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+
+        // Cockpit
+        ctx.fillStyle = '#FFF9F0'
+        ctx.beginPath()
+        ctx.ellipse(0, -2, 6, 12, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#4DD0E1'
+        ctx.beginPath()
+        ctx.arc(0, -4, 4, 0, Math.PI * 2)
+        ctx.fill()
+
+        ctx.restore()
+      } else if (type === 'runner') {
+        // Draw 3D Endless Runner Scene with rolling hill, obstacles & golden soja
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Rolling hill circle clipping
+        ctx.save()
+        ctx.beginPath()
+        ctx.arc(0, 0, 48, 0, Math.PI * 2)
+        ctx.clip()
+
+        // Sky
+        ctx.fillStyle = '#FFE082'
+        ctx.fillRect(-50, -50, 100, 100)
+
+        // Hills
+        ctx.fillStyle = '#8BC34A'
+        ctx.beginPath()
+        ctx.arc(0, 60, 68, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Roadway
+        ctx.fillStyle = '#795548'
+        ctx.beginPath()
+        ctx.arc(0, 64, 56, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Rolling crate obstacle
+        const crateX = 22 - ((angle * 45) % 80)
+        ctx.fillStyle = '#A1887F'
+        ctx.fillRect(crateX, 4, 12, 12)
+        ctx.strokeStyle = '#4E342E'
+        ctx.lineWidth = 1
+        ctx.strokeRect(crateX, 4, 12, 12)
+
+        // Golden Soja floating
+        const sojaBob = Math.sin(angle * 4) * 4
+        ctx.font = '16px sans-serif'
+        ctx.fillText('🌱', 10, -4 + sojaBob)
+
+        // Runner character
+        const jumpY = Math.abs(Math.sin(angle * 3.5)) * 14
+        ctx.fillStyle = '#3E2723'
+        ctx.fillRect(-18, 10 - jumpY, 3, 7)
+        ctx.fillRect(-12, 10 - jumpY, 3, 7)
+        ctx.fillStyle = '#8BC34A'
+        ctx.fillRect(-19, -2 - jumpY, 12, 12)
+        ctx.fillStyle = '#FFB74D'
+        ctx.beginPath()
+        ctx.arc(-13, -7 - jumpY, 5, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillText('🌾', -13, -12 - jumpY)
+
+        ctx.restore()
+
+        // Outer border
+        ctx.strokeStyle = '#8BC34A'
+        ctx.lineWidth = 2.5
+        ctx.beginPath()
+        ctx.arc(0, 0, 48, 0, Math.PI * 2)
+        ctx.stroke()
 
         ctx.restore()
       }

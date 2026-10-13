@@ -34,12 +34,13 @@ export const Navbar: React.FC = () => {
     { name: 'Central do Hub', path: '/', icon: Gamepad2 },
     { name: 'Mundo RPG', path: '/mundo', icon: Sparkles },
     { name: 'Fazenda', path: '/fazenda', icon: Tractor },
-    { name: 'Spider', path: '/spider', icon: Spade },
+    { name: 'Aeronave 2D', path: '/aeronave', icon: Gamepad2 },
+    { name: 'Corrida Runner', path: '/runner', icon: Sparkles },
     { name: 'Mahjong', path: '/mahjong', icon: Sparkles },
+    { name: 'Spider', path: '/spider', icon: Spade },
     { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
     { name: 'Tetris', path: '/tetris', icon: Layers },
     { name: 'Objetivos', path: '/objetivos', icon: Target },
-    { name: 'Melhorias', path: '/melhorias', icon: TrendingUp },
   ]
 
   const handleLogout = () => {
@@ -228,12 +229,20 @@ export const Footer: React.FC = () => {
             🚜 Fazenda Encantada
           </Link>
           <span>•</span>
-          <Link to="/spider" className="hover:text-[#8BC34A] transition-colors">
-            🕷️ Paciência Spider
+          <Link to="/aeronave" className="hover:text-[#8BC34A] transition-colors">
+            🚀 Aeronave 2D
+          </Link>
+          <span>•</span>
+          <Link to="/runner" className="hover:text-[#8BC34A] transition-colors">
+            🏃 Corrida do Vale
           </Link>
           <span>•</span>
           <Link to="/mahjong" className="hover:text-[#8BC34A] transition-colors">
             🀄 Mahjong Solitaire
+          </Link>
+          <span>•</span>
+          <Link to="/spider" className="hover:text-[#8BC34A] transition-colors">
+            🕷️ Paciência Spider
           </Link>
           <span>•</span>
           <Link to="/fabrica" className="hover:text-[#8BC34A] transition-colors">

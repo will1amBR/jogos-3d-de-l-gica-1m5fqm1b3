@@ -3,14 +3,16 @@ import { Outlet } from 'react-router-dom'
 import { Navbar, Footer } from './Navigation'
 import { LevelUpModal } from './LevelUpModal'
 import { StoryModal } from './StoryModal'
+import { ResourceHUD } from './ResourceHUD'
 import { useGame } from '@/context/GameContext'
 
 export default function Layout() {
-  const { levelUpModal, closeLevelUpModal, storyModal, closeStoryModal } = useGame()
+  const { user, player, levelUpModal, closeLevelUpModal, storyModal, closeStoryModal } = useGame()
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F0E8] text-[#3E2723] antialiased selection:bg-[#8BC34A] selection:text-white">
       <Navbar />
+      {user && player && <ResourceHUD />}
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-6 flex flex-col min-h-0">
         <Outlet />

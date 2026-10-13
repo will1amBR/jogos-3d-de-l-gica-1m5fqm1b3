@@ -15,6 +15,8 @@ import Fabrica from './pages/Fabrica'
 import Tetris from './pages/Tetris'
 import Spider from './pages/Spider'
 import Mahjong from './pages/Mahjong'
+import Aeronave from './pages/Aeronave'
+import Runner from './pages/Runner'
 import Jornada from './pages/Jornada'
 import Melhorias from './pages/Melhorias'
 import Conquistas from './pages/Conquistas'
@@ -43,6 +45,8 @@ const App = () => (
             <Route path="/tetris" element={<Tetris />} />
             <Route path="/spider" element={<Spider />} />
             <Route path="/mahjong" element={<Mahjong />} />
+            <Route path="/aeronave" element={<Aeronave />} />
+            <Route path="/runner" element={<Runner />} />
             <Route path="/jornada" element={<Jornada />} />
             <Route path="/melhorias" element={<Melhorias />} />
             <Route path="/conquistas" element={<Conquistas />} />

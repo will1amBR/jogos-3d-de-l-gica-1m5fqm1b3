@@ -167,25 +167,66 @@
     }
   }
 
-  /* Mahjong: par casado deslizando e sumindo suavemente com brilho de jade */
+  /* Mahjong: par casado deslizando e sumindo suavemente com brilho de jade e ouro */
   @keyframes mahjong-match-sparkle {
     0% {
-      transform: scale(1.12);
+      transform: scale(1.05) translateY(0);
       box-shadow:
-        0 0 20px #f59e0b,
-        0 0 30px #10b981;
+        0 0 0 3px #10b981,
+        0 0 24px #f59e0b,
+        0 0 36px #34d399;
+      filter: brightness(1.2);
       opacity: 1;
     }
-    50% {
-      transform: scale(1.18) rotate(2deg);
+    35% {
+      transform: scale(1.22) translateY(-14px) rotate(3deg);
       box-shadow:
+        0 0 0 5px #fbbf24,
         0 0 35px #fbbf24,
-        0 0 45px #34d399;
-      opacity: 0.85;
+        0 0 50px #10b981;
+      filter: brightness(1.4);
+      opacity: 0.95;
+    }
+    70% {
+      transform: scale(0.85) translateY(-32px) rotate(-6deg);
+      opacity: 0.6;
     }
     100% {
-      transform: scale(0.3) rotate(-8deg);
+      transform: scale(0.15) translateY(-60px) rotate(15deg);
       opacity: 0;
+    }
+  }
+
+  /* Mahjong seleção 3D de peça */
+  @keyframes mahjong-select-lift {
+    0% {
+      transform: translateY(0) scale(1);
+    }
+    100% {
+      transform: translateY(-8px) scale(1.12);
+      box-shadow:
+        0 12px 24px -4px rgba(245, 158, 11, 0.5),
+        0 0 0 3px #f59e0b,
+        0 0 16px #10b981;
+    }
+  }
+
+  /* Combo pop animado */
+  @keyframes combo-pulse {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    30% {
+      transform: scale(1.25);
+      opacity: 1;
+    }
+    60% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
     }
   }
 
@@ -198,7 +239,15 @@
   }
 
   .animate-mahjong-match {
-    animation: mahjong-match-sparkle 0.5s ease-out forwards;
+    animation: mahjong-match-sparkle 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+
+  .animate-mahjong-lift {
+    animation: mahjong-select-lift 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  .animate-combo-pulse {
+    animation: combo-pulse 0.4s ease-out forwards;
   }
 
   .animate-float-slow {

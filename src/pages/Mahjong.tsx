@@ -266,6 +266,11 @@ export default function Mahjong() {
   const [history, setHistory] = useState<BoardSlot[][]>([])
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [movesCount, setMovesCount] = useState(0)
+  const [combo, setCombo] = useState(1)
+  const [maxCombo, setMaxCombo] = useState(1)
+  const [lastMatchTime, setLastMatchTime] = useState(0)
+  const [comboAnim, setComboAnim] = useState(false)
+  const [sparkleTiles, setSparkleTiles] = useState<{ id: string; x: number; y: number }[]>([])
   const [isWon, setIsWon] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
 
@@ -427,6 +432,10 @@ export default function Mahjong() {
       setHistory([])
       setElapsedSeconds(0)
       setMovesCount(0)
+      setCombo(1)
+      setMaxCombo(1)
+      setLastMatchTime(0)
+      setSparkleTiles([])
       setIsWon(false)
       winClaimedRef.current = false
       playSound('shuffle')
@@ -595,7 +604,22 @@ export default function Mahjong() {
       const p2Id = slot.id
       const subLabel = slot.tile.subLabel
 
-      // Ativa efeito visual animado antes de limpar os slots
+      // Combo streak logic: if matched within 4.5 seconds of previous match
+      const nowMs = Date.now()
+      let currentMultiplier = 1
+      if (lastMatchTime > 0 && nowMs - lastMatchTime <= 4500) {
+        currentMultiplier = Math.min(8, combo + 1)
+        setCombo(currentMultiplier)
+        setMaxCombo((prev) => Math.max(prev, currentMultiplier))
+        setComboAnim(true)
+        setTimeout(() => setComboAnim(false), 600)
+      } else {
+        currentMultiplier = 1
+        setCombo(1)
+      }
+      setLastMatchTime(nowMs)
+
+      // Ativa efeito visual animado (jade + ouro + voo) antes de limpar os slots
       setMatchingPairIds([p1Id, p2Id])
       setSelectedSlotId(null)
 
@@ -613,9 +637,15 @@ export default function Mahjong() {
             setIsWon(true)
           } else {
             toast({
-              title: '✨ Par Removido com Sucesso!',
+              title:
+                currentMultiplier > 1
+                  ? `🔥 COMBO ${currentMultiplier}x! Jade & Ouro!`
+                  : '✨ Par Removido com Sucesso!',
               description: `${subLabel} correspondido! Restam ${remainingCount / 2} pares.`,
-              className: 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold',
+              className:
+                currentMultiplier > 1
+                  ? 'bg-amber-100 border-amber-400 text-amber-950 font-black'
+                  : 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold',
             })
           }
 
@@ -624,7 +654,7 @@ export default function Mahjong() {
 
         setMatchingPairIds((prev) => prev.filter((id) => id !== p1Id && id !== p2Id))
         setMovesCount((m) => m + 1)
-      }, 350)
+      }, 450)
     } else {
       setSelectedSlotId(slot.id)
       playSound('select')
@@ -831,11 +861,22 @@ export default function Mahjong() {
             </span>
           </div>
 
-          {/* Pares Casados */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1">
-            <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
-              Pares Casados
-            </span>
+          {/* Pares Casados & Multiplicador de Combo */}
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1 relative overflow-hidden">
+            <div className="flex items-center justify-between w-full px-1">
+              <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
+                Pares
+              </span>
+              <span
+                className={`text-[10px] uppercase font-black px-1.5 py-0.5 rounded-full transition-all ${
+                  combo > 1
+                    ? 'bg-amber-500 text-white animate-pulse'
+                    : 'bg-emerald-100 text-emerald-800'
+                } ${comboAnim ? 'animate-combo-pulse scale-110' : ''}`}
+              >
+                🔥 {combo}x
+              </span>
+            </div>
             <span className="text-xl sm:text-2xl font-black text-[#E65100] tabular-nums">
               {movesCount}
             </span>
@@ -911,11 +952,11 @@ export default function Mahjong() {
                     top: `${topPos}px`,
                     zIndex: layerZ + slot.row + (isSelected ? 50 : 0),
                   }}
-                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-transform duration-150 touch-manipulation active:scale-95 ${
+                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-all duration-200 touch-manipulation active:scale-95 ${
                     isMatching
-                      ? 'animate-mahjong-match z-50'
+                      ? 'animate-mahjong-match z-50 pointer-events-none'
                       : isSelected
-                        ? 'scale-110 ring-3 ring-amber-400 shadow-xl z-40'
+                        ? 'animate-mahjong-lift z-40 ring-4 ring-amber-400 ring-offset-2 shadow-2xl'
                         : isHinted
                           ? 'ring-3 ring-yellow-300 animate-pulse'
                           : isFree
@@ -939,17 +980,29 @@ export default function Mahjong() {
                     }}
                   />
 
-                  {/* Face frontal de marfim */}
+                  {/* Face frontal de marfim com efeito ouro/jade quando casando ou selecionada */}
                   <div
-                    className={`relative w-full h-full rounded-xl border-2 transition-colors ${
-                      isSelected
-                        ? 'bg-amber-50 border-amber-400 shadow-md'
-                        : isFree
-                          ? 'bg-[#FFFDF9] border-[#D7CCC8]'
-                          : 'bg-[#ECE5D8] border-[#BCAAA4]'
+                    className={`relative w-full h-full rounded-xl border-2 transition-all ${
+                      isMatching
+                        ? 'bg-gradient-to-br from-emerald-100 via-amber-100 to-yellow-200 border-amber-400 shadow-2xl'
+                        : isSelected
+                          ? 'bg-gradient-to-br from-amber-50 via-yellow-50 to-emerald-50 border-amber-400 shadow-lg'
+                          : isFree
+                            ? 'bg-[#FFFDF9] border-[#D7CCC8]'
+                            : 'bg-[#ECE5D8] border-[#BCAAA4]'
                     }`}
                   >
                     {renderTileContent(slot.tile)}
+
+                    {/* Faíscas douradas e de jade na peça selecionada ou casando */}
+                    {isMatching && (
+                      <div className="absolute -top-2 -right-2 text-base animate-ping">✨</div>
+                    )}
+                    {isSelected && (
+                      <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center text-[10px] text-white font-black shadow-xs">
+                        ✓
+                      </div>
+                    )}
 
                     {!isFree && (
                       <div className="absolute inset-0 rounded-xl bg-black/10 pointer-events-none" />
@@ -957,7 +1010,7 @@ export default function Mahjong() {
 
                     {slot.layer > 0 && (
                       <div className="absolute bottom-1 right-1 text-[8px] font-black text-[#8D6E63]/70">
-                        N{slot.layer + 1}
+                        L{slot.layer + 1}
                       </div>
                     )}
                   </div>
