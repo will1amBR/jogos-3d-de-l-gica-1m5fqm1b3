@@ -2,9 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import {
   ArrowLeft,
-  RotateCcw,
   Sparkles,
-  Trophy,
   HelpCircle,
   Lightbulb,
   Shuffle,
@@ -17,8 +15,8 @@ import { AuthGate } from '@/components/AuthGate'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/hooks/use-toast'
 
-// Categorias do Mahjong Solitaire no estilo Vita Mahjong:
-// Bambu (1..9), Circulos/Pontos (1..9), Caracteres Numericos (1..9), Ventos (4), Dragoes (3), Flores (4 - combinam entre si), Estacoes (4 - combinam entre si)
+// Categorias do Mahjong Solitaire:
+// Bambu (1..9), Circulos/Pontos (1..9), Numeros/Caracteres (1..9), Ventos (4), Dragoes (3), Flores (4 - combinam entre si), Estacoes (4 - combinam entre si)
 export type TileCategory = 'bamboo' | 'dot' | 'character' | 'wind' | 'dragon' | 'flower' | 'season'
 
 export interface TileDef {
@@ -29,6 +27,9 @@ export interface TileDef {
   label: string
   subLabel: string
   color: string
+  icon: string
+  cornerBadge?: string
+  accentBg?: string
 }
 
 export interface BoardSlot {
@@ -41,35 +42,262 @@ export interface BoardSlot {
 
 export type MahjongDifficulty = 'easy' | 'classic'
 
-// Ventos com simbolos visuais limpos
-const WIND_TILES: Record<number, { name: string; symbol: string }> = {
-  1: { name: 'Leste', symbol: 'L' },
-  2: { name: 'Sul', symbol: 'S' },
-  3: { name: 'Oeste', symbol: 'O' },
-  4: { name: 'Norte', symbol: 'N' },
+// Configuracoes ricas para cada familia de pecas — icone protagonista, cores vivas e diferenciacao nitida
+
+// BAMBU 1..9 (tons verdes de jade e natureza, icones variados de plantas e fauna)
+const BAMBOO_SPECS: Record<
+  number,
+  { icon: string; name: string; badge: string; color: string; bg: string }
+> = {
+  1: {
+    icon: '🦜',
+    name: 'Papagaio',
+    badge: '1',
+    color: '#1B5E20',
+    bg: 'from-emerald-50 to-green-100',
+  },
+  2: {
+    icon: '🎋',
+    name: 'Broto Duplo',
+    badge: '2',
+    color: '#2E7D32',
+    bg: 'from-green-50 to-emerald-100',
+  },
+  3: {
+    icon: '🎍',
+    name: 'Kadomatsu',
+    badge: '3',
+    color: '#33691E',
+    bg: 'from-lime-50 to-green-100',
+  },
+  4: {
+    icon: '🌿',
+    name: 'Folhas',
+    badge: '4',
+    color: '#1B5E20',
+    bg: 'from-emerald-50 to-teal-100',
+  },
+  5: {
+    icon: '🍃',
+    name: 'Bambu Vento',
+    badge: '5',
+    color: '#2E7D32',
+    bg: 'from-green-50 to-emerald-100',
+  },
+  6: {
+    icon: '🌾',
+    name: 'Espigas',
+    badge: '6',
+    color: '#388E3C',
+    bg: 'from-emerald-50 to-green-100',
+  },
+  7: { icon: '🌱', name: 'Brotos', badge: '7', color: '#1B5E20', bg: 'from-green-50 to-lime-100' },
+  8: {
+    icon: '🌳',
+    name: 'Floresta',
+    badge: '8',
+    color: '#2E7D32',
+    bg: 'from-emerald-50 to-teal-100',
+  },
+  9: {
+    icon: '🌴',
+    name: 'Palmeira',
+    badge: '9',
+    color: '#1B5E20',
+    bg: 'from-teal-50 to-emerald-100',
+  },
 }
 
-// Dragoes
-const DRAGON_TILES: Record<number, { name: string; symbol: string; color: string }> = {
-  1: { name: 'Dragao Vermelho', symbol: 'DV', color: '#D32F2F' },
-  2: { name: 'Dragao Verde', symbol: 'DV', color: '#2E7D32' },
-  3: { name: 'Dragao Branco', symbol: 'DB', color: '#1976D2' },
+// CIRCULOS 1..9 (tons azuis / ciano / safira de orbes celestes e pedras preciosas)
+const DOT_SPECS: Record<
+  number,
+  { icon: string; name: string; badge: string; color: string; bg: string }
+> = {
+  1: {
+    icon: '🔮',
+    name: 'Orbe Magico',
+    badge: '1',
+    color: '#0D47A1',
+    bg: 'from-sky-50 to-blue-100',
+  },
+  2: {
+    icon: '🧿',
+    name: 'Olho Protetor',
+    badge: '2',
+    color: '#1565C0',
+    bg: 'from-blue-50 to-indigo-100',
+  },
+  3: {
+    icon: '🌕',
+    name: 'Lua Cheia',
+    badge: '3',
+    color: '#0277BD',
+    bg: 'from-amber-50 to-sky-100',
+  },
+  4: { icon: '🌀', name: 'Vortice', badge: '4', color: '#0288D1', bg: 'from-cyan-50 to-blue-100' },
+  5: { icon: '💠', name: 'Diamante', badge: '5', color: '#01579B', bg: 'from-sky-50 to-cyan-100' },
+  6: { icon: '🔘', name: 'Perola', badge: '6', color: '#0277BD', bg: 'from-blue-50 to-sky-100' },
+  7: {
+    icon: '🪐',
+    name: 'Saturno',
+    badge: '7',
+    color: '#0288D1',
+    bg: 'from-indigo-50 to-blue-100',
+  },
+  8: { icon: '💎', name: 'Safira', badge: '8', color: '#01579B', bg: 'from-cyan-50 to-blue-100' },
+  9: { icon: '🌌', name: 'Galaxia', badge: '9', color: '#0D47A1', bg: 'from-sky-50 to-indigo-100' },
 }
 
-// Flores (qualquer flor combina com qualquer flor, matchGroup: "flower_group")
+// NUMEROS 1..9 (tons rubi / coral / vermelho imperial chinês com simbolos romanos limpos)
+const CHAR_SPECS: Record<
+  number,
+  { icon: string; name: string; badge: string; color: string; bg: string }
+> = {
+  1: { icon: 'I', name: 'Numero 1', badge: '1', color: '#C62828', bg: 'from-rose-50 to-red-100' },
+  2: { icon: 'II', name: 'Numero 2', badge: '2', color: '#D32F2F', bg: 'from-rose-50 to-red-100' },
+  3: { icon: 'III', name: 'Numero 3', badge: '3', color: '#B71C1C', bg: 'from-rose-50 to-red-100' },
+  4: { icon: 'IV', name: 'Numero 4', badge: '4', color: '#C62828', bg: 'from-red-50 to-rose-100' },
+  5: { icon: 'V', name: 'Numero 5', badge: '5', color: '#D32F2F', bg: 'from-rose-50 to-red-100' },
+  6: { icon: 'VI', name: 'Numero 6', badge: '6', color: '#B71C1C', bg: 'from-red-50 to-rose-100' },
+  7: { icon: 'VII', name: 'Numero 7', badge: '7', color: '#C62828', bg: 'from-rose-50 to-red-100' },
+  8: {
+    icon: 'VIII',
+    name: 'Numero 8',
+    badge: '8',
+    color: '#D32F2F',
+    bg: 'from-rose-50 to-red-100',
+  },
+  9: { icon: 'IX', name: 'Numero 9', badge: '9', color: '#B71C1C', bg: 'from-red-50 to-rose-100' },
+}
+
+// VENTOS (tons violeta / ametista elegantes com pontos cardeais bem claros)
+const WIND_TILES: Record<
+  number,
+  { name: string; symbol: string; icon: string; color: string; bg: string }
+> = {
+  1: {
+    name: 'Leste',
+    symbol: 'L',
+    icon: '🧭 L',
+    color: '#5E35B1',
+    bg: 'from-purple-50 to-violet-100',
+  },
+  2: {
+    name: 'Sul',
+    symbol: 'S',
+    icon: '☀️ S',
+    color: '#6A1B9A',
+    bg: 'from-purple-50 to-fuchsia-100',
+  },
+  3: {
+    name: 'Oeste',
+    symbol: 'O',
+    icon: '🌅 O',
+    color: '#4A148C',
+    bg: 'from-violet-50 to-purple-100',
+  },
+  4: {
+    name: 'Norte',
+    symbol: 'N',
+    icon: '❄️ N',
+    color: '#512DA8',
+    bg: 'from-indigo-50 to-purple-100',
+  },
+}
+
+// DRAGOES (Dragao Vermelho, Verde e Branco com estetica mitica e alto contraste)
+const DRAGON_TILES: Record<
+  number,
+  { name: string; symbol: string; icon: string; color: string; bg: string }
+> = {
+  1: {
+    name: 'Dragao Vermelho',
+    symbol: 'DV',
+    icon: '🐉',
+    color: '#D32F2F',
+    bg: 'from-red-50 to-rose-150',
+  },
+  2: {
+    name: 'Dragao Verde',
+    symbol: 'DV',
+    icon: '🐲',
+    color: '#2E7D32',
+    bg: 'from-emerald-50 to-green-150',
+  },
+  3: {
+    name: 'Dragao Branco',
+    symbol: 'DB',
+    icon: '🏛️',
+    color: '#1976D2',
+    bg: 'from-sky-50 to-blue-150',
+  },
+}
+
+// FLORES (qualquer flor combina com qualquer flor, matchGroup: "flower_group")
 const FLOWER_NAMES: Record<number, { name: string; icon: string }> = {
   1: { name: 'Ameixeira', icon: '🌸' },
   2: { name: 'Orquidea', icon: '🌺' },
   3: { name: 'Crisantemo', icon: '🌼' },
-  4: { name: 'Flor Bambu', icon: '🎋' },
+  4: { name: 'Lotus Real', icon: '🪷' },
 }
 
-// Estacoes (qualquer estacao combina com qualquer estacao, matchGroup: "season_group")
+// ESTACOES (qualquer estacao combina com qualquer estacao, matchGroup: "season_group")
 const SEASON_NAMES: Record<number, { name: string; icon: string }> = {
   1: { name: 'Primavera', icon: '🌱' },
   2: { name: 'Verao', icon: '☀️' },
   3: { name: 'Outono', icon: '🍂' },
   4: { name: 'Inverno', icon: '❄️' },
+}
+
+// Configuracao visual de cada camada para elevacao 3D obvia de relance
+const LAYER_STYLES: Record<
+  number,
+  {
+    name: string
+    badgeBg: string
+    badgeText: string
+    borderHighlight: string
+    shadowClass: string
+    scale: number
+    liftOffset: { x: number; y: number }
+  }
+> = {
+  0: {
+    name: 'Andar 1 (Base)',
+    badgeBg: 'bg-stone-500/80',
+    badgeText: 'text-stone-100',
+    borderHighlight: 'border-stone-300',
+    shadowClass: 'shadow-sm',
+    scale: 1,
+    liftOffset: { x: 0, y: 0 },
+  },
+  1: {
+    name: 'Andar 2',
+    badgeBg: 'bg-emerald-600',
+    badgeText: 'text-white',
+    borderHighlight: 'border-emerald-300',
+    shadowClass: 'shadow-md',
+    scale: 1.015,
+    liftOffset: { x: -3, y: -4 },
+  },
+  2: {
+    name: 'Andar 3',
+    badgeBg: 'bg-amber-500',
+    badgeText: 'text-amber-950 font-black',
+    borderHighlight: 'border-amber-300 ring-1 ring-amber-400/60',
+    shadowClass: 'shadow-xl',
+    scale: 1.035,
+    liftOffset: { x: -6, y: -9 },
+  },
+  3: {
+    name: 'Andar 4 (Topo)',
+    badgeBg: 'bg-purple-600',
+    badgeText: 'text-white font-black',
+    borderHighlight: 'border-purple-300 ring-2 ring-purple-400/80',
+    shadowClass: 'shadow-2xl',
+    scale: 1.055,
+    liftOffset: { x: -9, y: -14 },
+  },
 }
 
 // Gera pecas em pares correspondentes (quadras de 4 pecas)
@@ -84,6 +312,9 @@ function createTilePairPool(totalTiles: number): TileDef[] {
     label: string,
     subLabel: string,
     color: string,
+    icon: string,
+    cornerBadge?: string,
+    accentBg?: string,
   ) => {
     for (let i = 0; i < 4; i++) {
       tileSeq++
@@ -95,40 +326,41 @@ function createTilePairPool(totalTiles: number): TileDef[] {
         label,
         subLabel,
         color,
+        icon,
+        cornerBadge,
+        accentBg,
       })
     }
   }
 
   // Circulos 1..9
   for (let v = 1; v <= 9; v++) {
-    pushQuad('dot', v, `dot_${v}`, `${v}`, 'Circulo', '#1E88E5')
+    const s = DOT_SPECS[v]
+    pushQuad('dot', v, `dot_${v}`, s.icon, s.name, s.color, s.icon, s.badge, s.bg)
   }
 
   // Bambu 1..9
   for (let v = 1; v <= 9; v++) {
-    pushQuad('bamboo', v, `bamboo_${v}`, `${v}`, 'Bambu', '#2E7D32')
+    const s = BAMBOO_SPECS[v]
+    pushQuad('bamboo', v, `bamboo_${v}`, s.icon, s.name, s.color, s.icon, s.badge, s.bg)
   }
 
-  // Caracteres Numericos 1..9
+  // Numeros 1..9
   for (let v = 1; v <= 9; v++) {
-    pushQuad('character', v, `char_${v}`, `${v}`, 'Numero', '#D32F2F')
+    const s = CHAR_SPECS[v]
+    pushQuad('character', v, `char_${v}`, s.icon, s.name, s.color, s.icon, s.badge, s.bg)
   }
 
   // Ventos 1..4
   for (let v = 1; v <= 4; v++) {
-    pushQuad('wind', v, `wind_${v}`, WIND_TILES[v].symbol, WIND_TILES[v].name, '#5E35B1')
+    const w = WIND_TILES[v]
+    pushQuad('wind', v, `wind_${v}`, w.symbol, w.name, w.color, w.icon, w.symbol, w.bg)
   }
 
   // Dragoes 1..3
   for (let v = 1; v <= 3; v++) {
-    pushQuad(
-      'dragon',
-      v,
-      `dragon_${v}`,
-      DRAGON_TILES[v].symbol,
-      DRAGON_TILES[v].name,
-      DRAGON_TILES[v].color,
-    )
+    const d = DRAGON_TILES[v]
+    pushQuad('dragon', v, `dragon_${v}`, d.symbol, d.name, d.color, d.icon, d.symbol, d.bg)
   }
 
   // Flores (todas pertencem ao grupo de flor)
@@ -142,6 +374,9 @@ function createTilePairPool(totalTiles: number): TileDef[] {
       label: FLOWER_NAMES[v].icon,
       subLabel: FLOWER_NAMES[v].name,
       color: '#E91E63',
+      icon: FLOWER_NAMES[v].icon,
+      cornerBadge: '🌸',
+      accentBg: 'from-pink-50 to-rose-100',
     })
   }
 
@@ -156,6 +391,9 @@ function createTilePairPool(totalTiles: number): TileDef[] {
       label: SEASON_NAMES[v].icon,
       subLabel: SEASON_NAMES[v].name,
       color: '#FB8C00',
+      icon: SEASON_NAMES[v].icon,
+      cornerBadge: '☀️',
+      accentBg: 'from-amber-50 to-orange-100',
     })
   }
 
@@ -176,7 +414,7 @@ function createTilePairPool(totalTiles: number): TileDef[] {
 
   const groupKeys = Object.keys(groupBuckets)
   let kIdx = 0
-  while (result.length < totalTiles && kIdx < groupKeys.length * 3) {
+  while (result.length < totalTiles && kIdx < groupKeys.length * 4) {
     const k = groupKeys[kIdx % groupKeys.length]
     const list = groupBuckets[k]
     if (list && list.length >= 2) {
@@ -194,7 +432,7 @@ function createTilePairPool(totalTiles: number): TileDef[] {
   return result
 }
 
-// Layout Facil (36 pecas, 3 camadas em piramide compacta)
+// Layout Facil (36 pecas, 3 camadas em piramide compacta 6 colunas x 4 linhas)
 function generateEasySlots(): { layer: number; row: number; col: number }[] {
   const slots: { layer: number; row: number; col: number }[] = []
 
@@ -222,7 +460,7 @@ function generateEasySlots(): { layer: number; row: number; col: number }[] {
   return slots // 24 + 8 + 4 = 36 pecas
 }
 
-// Layout Classico Tartaruga / Piramidal (72 pecas, 4 camadas)
+// Layout Classico (72 pecas, 4 camadas)
 function generateClassicSlots(): { layer: number; row: number; col: number }[] {
   const slots: { layer: number; row: number; col: number }[] = []
 
@@ -270,9 +508,14 @@ export default function Mahjong() {
   const [maxCombo, setMaxCombo] = useState(1)
   const [lastMatchTime, setLastMatchTime] = useState(0)
   const [comboAnim, setComboAnim] = useState(false)
-  const [sparkleTiles, setSparkleTiles] = useState<{ id: string; x: number; y: number }[]>([])
   const [isWon, setIsWon] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [tappedSlotId, setTappedSlotId] = useState<string | null>(null)
+  const [isGameStarting, setIsGameStarting] = useState(true)
+
+  // Medicao da largura do container do tabuleiro para auto-scale perfeito
+  const boardContainerRef = useRef<HTMLDivElement | null>(null)
+  const [containerWidth, setContainerWidth] = useState<number>(360)
 
   const winClaimedRef = useRef(false)
 
@@ -357,11 +600,35 @@ export default function Mahjong() {
     [soundEnabled, getAudioContext],
   )
 
+  // ResizeObserver para manter tabuleiro 100% visivel na tela sem rolagem horizontal
+  useEffect(() => {
+    const el = boardContainerRef.current
+    if (!el) return
+
+    const updateWidth = () => {
+      const w = el.clientWidth
+      if (w > 0) {
+        setContainerWidth(w)
+      }
+    }
+
+    updateWidth()
+
+    const ro = new ResizeObserver(() => {
+      updateWidth()
+    })
+    ro.observe(el)
+
+    window.addEventListener('resize', updateWidth)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', updateWidth)
+    }
+  }, [])
+
   // Mapa memoizado de quais pecas estao livres (calculado UMA VEZ por mudanca de tabuleiro)
   const freeTileMap = useMemo(() => {
     const map = new Map<string, boolean>()
-
-    // Filtrar apenas slots com pecas
     const activeSlots = boardSlots.filter((s) => s.tile !== null)
 
     for (const targetSlot of activeSlots) {
@@ -403,15 +670,6 @@ export default function Mahjong() {
     return map
   }, [boardSlots])
 
-  // Verifica se peca esta livre via Map O(1)
-  const isTileFree = useCallback(
-    (targetSlot: BoardSlot): boolean => {
-      if (!targetSlot.tile) return false
-      return freeTileMap.get(targetSlot.id) || false
-    },
-    [freeTileMap],
-  )
-
   // Iniciar nova partida
   const startNewGame = useCallback(
     (diff: MahjongDifficulty = difficulty) => {
@@ -435,10 +693,15 @@ export default function Mahjong() {
       setCombo(1)
       setMaxCombo(1)
       setLastMatchTime(0)
-      setSparkleTiles([])
       setIsWon(false)
+      setIsGameStarting(true)
       winClaimedRef.current = false
       playSound('shuffle')
+
+      // Finaliza o estado de deal apos a cascata
+      setTimeout(() => {
+        setIsGameStarting(false)
+      }, 700)
     },
     [difficulty, playSound],
   )
@@ -465,7 +728,6 @@ export default function Mahjong() {
     const freeSlots = boardSlots.filter((s) => s.tile !== null && freeTileMap.get(s.id))
     const pairs: [BoardSlot, BoardSlot][] = []
 
-    // Agrupa por matchGroup para busca linear rapida
     const grouped: Record<string, BoardSlot[]> = {}
     for (const slot of freeSlots) {
       const g = slot.tile!.matchGroup
@@ -530,7 +792,7 @@ export default function Mahjong() {
     playSound('shuffle')
 
     toast({
-      title: 'Pecas Embaralhadas!',
+      title: 'Pecas Embaralhadas! 🔀',
       description: 'O tabuleiro foi reorganizado com novos caminhos abertos.',
       className: 'bg-amber-50 border-amber-300 text-amber-950 font-bold',
     })
@@ -545,7 +807,7 @@ export default function Mahjong() {
       setHintPair([first.id, second.id])
       playSound('select')
       toast({
-        title: 'Dica Encontrada!',
+        title: 'Dica Encontrada! 💡',
         description: `Par de ${first.tile?.subLabel || 'pecas'} destacado em dourado no tabuleiro.`,
         className: 'bg-amber-50 border-amber-300 text-amber-950 font-bold',
       })
@@ -564,13 +826,19 @@ export default function Mahjong() {
   const handleSlotClick = (slot: BoardSlot) => {
     if (!slot.tile || isWon) return
 
+    // Efeito tatil de toque
+    setTappedSlotId(slot.id)
+    setTimeout(() => {
+      setTappedSlotId((prev) => (prev === slot.id ? null : prev))
+    }, 280)
+
     const isFree = freeTileMap.get(slot.id)
     if (!isFree) {
       playSound('blocked')
       toast({
-        title: 'Peça Bloqueada!',
+        title: 'Peca Bloqueada!',
         description:
-          'A peça precisa ter pelo menos um lado (esquerdo ou direito) livre e nenhuma peça por cima.',
+          'A peca precisa ter pelo menos um lado (esquerdo ou direito) livre e nenhuma peca por cima.',
         variant: 'destructive',
       })
       return
@@ -619,7 +887,7 @@ export default function Mahjong() {
       }
       setLastMatchTime(nowMs)
 
-      // Ativa efeito visual animado (jade + ouro + voo) antes de limpar os slots
+      // Ativa efeito visual animado (jade + ouro + choque + faiscas) antes de limpar
       setMatchingPairIds([p1Id, p2Id])
       setSelectedSlotId(null)
 
@@ -654,7 +922,7 @@ export default function Mahjong() {
 
         setMatchingPairIds((prev) => prev.filter((id) => id !== p1Id && id !== p2Id))
         setMovesCount((m) => m + 1)
-      }, 450)
+      }, 480)
     } else {
       setSelectedSlotId(slot.id)
       playSound('select')
@@ -677,7 +945,7 @@ export default function Mahjong() {
       )
 
       toast({
-        title: 'TABULEIRO LIMPO COM MAESTRIA!',
+        title: 'TABULEIRO LIMPO COM MAESTRIA! 🏆',
         description: `Voce removeu todas as pecas do Mahjong Solitaire! +${bonusCoins} Moedas e +${bonusXp} XP ganhos!`,
         className: 'bg-amber-50 border-amber-400 text-amber-950 font-black',
       })
@@ -690,77 +958,99 @@ export default function Mahjong() {
     return `${m}:${s < 10 ? '0' : ''}${s}`
   }
 
-  // Renderiza face da peca no estilo Vita Mahjong (alto contraste, facil leitura)
-  const renderTileContent = (tile: TileDef) => {
-    if (tile.category === 'flower' || tile.category === 'season') {
-      return (
-        <div className="flex flex-col items-center justify-center h-full p-1 leading-none text-center">
-          <span className="text-2xl sm:text-3xl drop-shadow-sm">{tile.label}</span>
+  // Renderiza a face protagonista da peca com icone gigante, alto contraste e badge de canto legivel
+  const renderTileFace = (tile: TileDef) => {
+    const isSpecial = tile.category === 'flower' || tile.category === 'season'
+
+    return (
+      <div className="relative w-full h-full flex flex-col items-center justify-between p-1 select-none overflow-hidden">
+        {/* Badge minusculo e discreto no topo esquerdo (apenas valor ou simbolo sem atrapalhar) */}
+        <div className="w-full flex items-center justify-between px-0.5 leading-none">
           <span
-            className="text-[9px] sm:text-[10px] font-black mt-1 uppercase tracking-tight"
+            className="text-[10px] font-black rounded-sm px-1 py-0.2"
             style={{ color: tile.color }}
+          >
+            {tile.cornerBadge || tile.value}
+          </span>
+          {/* Categoria em sigla sutil */}
+          <span className="text-[7.5px] font-bold uppercase tracking-tighter opacity-60 text-stone-600">
+            {tile.category === 'character'
+              ? 'NUM'
+              : tile.category === 'bamboo'
+                ? 'BAM'
+                : tile.category === 'dot'
+                  ? 'CIR'
+                  : tile.category === 'wind'
+                    ? 'VENT'
+                    : tile.category === 'dragon'
+                      ? 'DRAG'
+                      : isSpecial
+                        ? 'ESPEC'
+                        : ''}
+          </span>
+        </div>
+
+        {/* ICONE PROTAGONISTA: Grande, nitido e altamente distinto de relance */}
+        <div className="flex-1 flex items-center justify-center my-0.5">
+          {tile.category === 'character' ? (
+            <span
+              className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-xs"
+              style={{ color: tile.color }}
+            >
+              {tile.label}
+            </span>
+          ) : (
+            <span className="text-2xl sm:text-3xl filter drop-shadow-xs leading-none transform transition-transform hover:scale-110">
+              {tile.icon}
+            </span>
+          )}
+        </div>
+
+        {/* Rotulo inferior ultra-compacto (nome especifico da peca em vez de repetir BAMBU/CIRCULO) */}
+        <div className="w-full text-center leading-none">
+          <span
+            className="text-[8px] font-black uppercase tracking-tight block truncate px-0.5"
+            style={{ color: tile.color }}
+            title={tile.subLabel}
           >
             {tile.subLabel}
           </span>
         </div>
-      )
-    }
-
-    if (tile.category === 'dot') {
-      return (
-        <div className="flex flex-col items-center justify-between h-full p-1.5 text-[#0288D1]">
-          <span className="text-xs sm:text-sm font-black self-start leading-none">
-            {tile.value}
-          </span>
-          <div className="flex items-center justify-center text-xl sm:text-2xl leading-none">
-            {tile.value === 1 ? '🔵' : '🔘'}
-          </div>
-          <span className="text-[9px] sm:text-[10px] font-black uppercase text-[#0277BD]">
-            Circulo
-          </span>
-        </div>
-      )
-    }
-
-    if (tile.category === 'bamboo') {
-      return (
-        <div className="flex flex-col items-center justify-between h-full p-1.5 text-[#2E7D32]">
-          <span className="text-xs sm:text-sm font-black self-start leading-none">
-            {tile.value}
-          </span>
-          <div className="flex items-center justify-center text-xl sm:text-2xl leading-none">
-            {tile.value === 1 ? '🦜' : '🎋'}
-          </div>
-          <span className="text-[9px] sm:text-[10px] font-black uppercase text-[#1B5E20]">
-            Bambu
-          </span>
-        </div>
-      )
-    }
-
-    return (
-      <div
-        className="flex flex-col items-center justify-between h-full p-1.5"
-        style={{ color: tile.color }}
-      >
-        <span className="text-xs font-black self-start leading-none opacity-80">{tile.value}</span>
-        <span className="text-xl sm:text-2xl font-black drop-shadow-sm leading-none">
-          {tile.label}
-        </span>
-        <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-tight">
-          {tile.subLabel}
-        </span>
       </div>
     )
   }
 
-  const maxRow = useMemo(() => Math.max(...boardSlots.map((s) => s.row), 6), [boardSlots])
+  // Layout base: calculo das dimensoes logicas do tabuleiro
   const maxCol = useMemo(() => Math.max(...boardSlots.map((s) => s.col), 8), [boardSlots])
+  const maxRow = useMemo(() => Math.max(...boardSlots.map((s) => s.row), 6), [boardSlots])
+
+  // Largura e altura da celula de referencia logica
+  const BASE_CELL_WIDTH = 58
+  const BASE_CELL_HEIGHT = 70
+  const BOARD_PADDING_X = 24
+  const BOARD_PADDING_Y = 24
+
+  // Dimensao do tabuleiro no espaco de design ideal
+  const logicalBoardWidth = (maxCol + 1.2) * BASE_CELL_WIDTH + BOARD_PADDING_X * 2
+  const logicalBoardHeight = (maxRow + 1.2) * BASE_CELL_HEIGHT + BOARD_PADDING_Y * 2
+
+  // Fator de escala dinamico: cabe 100% na largura do container no mobile em retrato sem rolagem horizontal
+  const boardScale = useMemo(() => {
+    if (!containerWidth || containerWidth <= 0) return 1
+    // Permite um padding de 8px nas laterais para respirar confortavelmente
+    const availableWidth = Math.max(containerWidth - 16, 280)
+    const scale = availableWidth / logicalBoardWidth
+    // Limita entre 0.42x (telas ultra estreitas) e 1.08x (telas desktop largas)
+    return Math.min(Math.max(scale, 0.42), 1.08)
+  }, [containerWidth, logicalBoardWidth])
+
+  const scaledBoardWidth = logicalBoardWidth * boardScale
+  const scaledBoardHeight = logicalBoardHeight * boardScale
 
   return (
     <AuthGate>
       <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
-        {/* Navegacao e Titulo */}
+        {/* Navegacao e Cabecalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
             <Link to="/">
@@ -777,12 +1067,12 @@ export default function Mahjong() {
                 <span className="text-2xl">🀄</span> Mahjong Solitaire
               </h1>
               <p className="text-xs text-[#795548] font-bold">
-                Estilo Vita Mahjong com pecas grandes, relevo 3D nitido e alto contraste.
+                Auto-ajuste responsivo na tela • Icones grandes de relance • Andares 3D destacados
               </p>
             </div>
           </div>
 
-          {/* Selecao de dificuldade */}
+          {/* Dificuldade & Som */}
           <div className="flex items-center gap-2">
             <div className="flex bg-[#F5ECE1] p-1 rounded-2xl border border-amber-200">
               <button
@@ -825,10 +1115,10 @@ export default function Mahjong() {
           </div>
         </div>
 
-        {/* Estatisticas do Jogo */}
+        {/* Estatisticas e Acoes Rapidas */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
           {/* Pares Restantes */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Pares Restantes
             </span>
@@ -838,7 +1128,7 @@ export default function Mahjong() {
           </div>
 
           {/* Jogadas Livres */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Jogadas Livres
             </span>
@@ -852,7 +1142,7 @@ export default function Mahjong() {
           </div>
 
           {/* Tempo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Tempo
             </span>
@@ -862,7 +1152,7 @@ export default function Mahjong() {
           </div>
 
           {/* Pares Casados & Multiplicador de Combo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1 relative overflow-hidden">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1 relative overflow-hidden">
             <div className="flex items-center justify-between w-full px-1">
               <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
                 Pares
@@ -915,113 +1205,183 @@ export default function Mahjong() {
           </div>
         </div>
 
-        {/* Tabuleiro 3D Mahjong */}
-        <div className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-2 sm:p-4 shadow-2xl min-h-[460px] flex items-center justify-center overflow-x-auto">
-          <div className="absolute inset-0 bg-radial from-transparent to-black/35 pointer-events-none rounded-2xl" />
+        {/* Legenda visual dos Andares 3D para leitura imediata da profundidade */}
+        <div className="bg-[#FFF9F0] border border-amber-200/70 rounded-2xl px-3 py-1.5 flex items-center justify-between flex-wrap gap-2 text-[11px] font-black text-[#5D4037]">
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+            Andares 3D:
+          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg text-stone-700">
+              <span className="w-2.5 h-2.5 rounded bg-stone-500 inline-block" /> L1 Base
+            </span>
+            <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-lg text-emerald-800">
+              <span className="w-2.5 h-2.5 rounded bg-emerald-600 inline-block" /> L2 Meio
+            </span>
+            <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-lg text-amber-900">
+              <span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block" /> L3 Alto
+            </span>
+            <span className="inline-flex items-center gap-1 bg-purple-50 border border-purple-300 px-2 py-0.5 rounded-lg text-purple-900">
+              <span className="w-2.5 h-2.5 rounded bg-purple-600 inline-block" /> L4 Topo 👑
+            </span>
+          </div>
+        </div>
 
-          {/* Area do tabuleiro com profundidade 3D em CSS otimizada para mobile */}
+        {/* Tabuleiro 3D Mahjong — Conteiner de Auto-Ajuste com 100% de visibilidade e sem scroll */}
+        <div
+          ref={boardContainerRef}
+          className="relative rounded-3xl bg-gradient-to-b from-[#2E5A36] via-[#1E3F24] to-[#152F1A] border-4 border-[#3E2723]/30 p-2 sm:p-4 shadow-2xl flex items-center justify-center overflow-hidden min-h-[380px]"
+        >
+          {/* Luz ambiente de mesa de feltro verde com vinheta */}
+          <div className="absolute inset-0 bg-radial from-transparent to-black/40 pointer-events-none rounded-2xl" />
+
+          {/* Wrapper dimensionado na proporcao exata da escala responsiva para nao estourar a tela */}
           <div
-            className="relative my-1 sm:my-2"
+            className="relative flex items-center justify-center transition-all duration-300"
             style={{
-              width: `${(maxCol + 1) * 56}px`,
-              height: `${(maxRow + 1) * 64}px`,
-              minWidth: '300px',
+              width: `${scaledBoardWidth}px`,
+              height: `${scaledBoardHeight}px`,
+              maxWidth: '100%',
             }}
           >
-            {boardSlots.map((slot) => {
-              if (!slot.tile) return null
+            {/* Tabuleiro no tamanho logico interno com transform scale aplicado */}
+            <div
+              className="absolute top-0 left-0 origin-top-left"
+              style={{
+                width: `${logicalBoardWidth}px`,
+                height: `${logicalBoardHeight}px`,
+                transform: `scale(${boardScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {boardSlots.map((slot, index) => {
+                if (!slot.tile) return null
 
-              const isFree = freeTileMap.get(slot.id) || false
-              const isSelected = selectedSlotId === slot.id
-              const isHinted = hintPair?.includes(slot.id) || false
-              const isMatching = matchingPairIds.includes(slot.id)
+                const isFree = freeTileMap.get(slot.id) || false
+                const isSelected = selectedSlotId === slot.id
+                const isHinted = hintPair?.includes(slot.id) || false
+                const isMatching = matchingPairIds.includes(slot.id)
+                const isTapped = tappedSlotId === slot.id
 
-              const layerZ = slot.layer * 10
-              const layerOffsetX = slot.layer * -3
-              const layerOffsetY = slot.layer * -5
+                const layerConfig = LAYER_STYLES[slot.layer] || LAYER_STYLES[0]
 
-              const leftPos = slot.col * 58 + layerOffsetX
-              const topPos = slot.row * 68 + layerOffsetY
+                // Posicionamento espacial com elevacao tridimensional nitida
+                const layerOffset = layerConfig.liftOffset
+                const leftPos = BOARD_PADDING_X + slot.col * BASE_CELL_WIDTH + layerOffset.x
+                const topPos = BOARD_PADDING_Y + slot.row * BASE_CELL_HEIGHT + layerOffset.y
 
-              return (
-                <div
-                  key={slot.id}
-                  onClick={() => handleSlotClick(slot)}
-                  style={{
-                    left: `${leftPos}px`,
-                    top: `${topPos}px`,
-                    zIndex: layerZ + slot.row + (isSelected ? 50 : 0),
-                  }}
-                  className={`absolute w-13 h-17 sm:w-16 sm:h-20 rounded-xl cursor-pointer transition-all duration-200 touch-manipulation active:scale-95 ${
-                    isMatching
-                      ? 'animate-mahjong-match z-50 pointer-events-none'
-                      : isSelected
-                        ? 'animate-mahjong-lift z-40 ring-4 ring-amber-400 ring-offset-2 shadow-2xl'
-                        : isHinted
-                          ? 'ring-3 ring-yellow-300 animate-pulse'
-                          : isFree
-                            ? 'hover:brightness-105 hover:scale-[1.03]'
-                            : 'opacity-65 cursor-not-allowed'
-                  }`}
-                >
-                  {/* Base de sombra 3D da peca simplificada (sem filtro pesado de drop-shadow) */}
+                // Z-index garantido: pecas superiores e linhas inferiores ficam na frente
+                const zIndex =
+                  slot.layer * 40 + slot.row * 4 + (isSelected ? 500 : isMatching ? 600 : 0)
+
+                // Cascata de deal escalonada
+                const dealDelayMs = isGameStarting ? Math.min(index * 12, 450) : 0
+
+                return (
                   <div
-                    className="absolute inset-0 rounded-xl bg-[#5D4037]/40"
+                    key={slot.id}
+                    onClick={() => handleSlotClick(slot)}
                     style={{
-                      transform: 'translate(3px, 4px)',
+                      left: `${leftPos}px`,
+                      top: `${topPos}px`,
+                      zIndex,
+                      animationDelay: isGameStarting ? `${dealDelayMs}ms` : undefined,
                     }}
-                  />
-
-                  {/* Camada verde traseira de jade */}
-                  <div
-                    className="absolute inset-0 rounded-xl bg-[#1B5E20]"
-                    style={{
-                      transform: 'translate(1.5px, 2px)',
-                    }}
-                  />
-
-                  {/* Face frontal de marfim com efeito ouro/jade quando casando ou selecionada */}
-                  <div
-                    className={`relative w-full h-full rounded-xl border-2 transition-all ${
+                    className={`absolute w-[54px] h-[66px] rounded-xl cursor-pointer transition-transform duration-150 touch-manipulation select-none ${
+                      isGameStarting ? 'animate-mahjong-deal' : ''
+                    } ${isTapped ? 'animate-mahjong-wiggle' : ''} ${
                       isMatching
-                        ? 'bg-gradient-to-br from-emerald-100 via-amber-100 to-yellow-200 border-amber-400 shadow-2xl'
+                        ? 'animate-mahjong-match pointer-events-none'
                         : isSelected
-                          ? 'bg-gradient-to-br from-amber-50 via-yellow-50 to-emerald-50 border-amber-400 shadow-lg'
-                          : isFree
-                            ? 'bg-[#FFFDF9] border-[#D7CCC8]'
-                            : 'bg-[#ECE5D8] border-[#BCAAA4]'
+                          ? 'animate-mahjong-lift ring-4 ring-amber-400 ring-offset-2'
+                          : isHinted
+                            ? 'ring-3 ring-yellow-300 animate-pulse'
+                            : isFree
+                              ? 'animate-mahjong-free hover:brightness-105 hover:scale-[1.04]'
+                              : 'opacity-65 cursor-not-allowed'
                     }`}
                   >
-                    {renderTileContent(slot.tile)}
-
-                    {/* Faíscas douradas e de jade na peça selecionada ou casando */}
+                    {/* Onda de choque e faiscas ao casar */}
                     {isMatching && (
-                      <div className="absolute -top-2 -right-2 text-base animate-ping">✨</div>
-                    )}
-                    {isSelected && (
-                      <div className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-amber-400 rounded-full flex items-center justify-center text-[10px] text-white font-black shadow-xs">
-                        ✓
-                      </div>
+                      <div className="absolute -inset-3 rounded-2xl border-4 border-amber-300 animate-mahjong-shock pointer-events-none z-50 bg-amber-400/20" />
                     )}
 
-                    {!isFree && (
-                      <div className="absolute inset-0 rounded-xl bg-black/10 pointer-events-none" />
-                    )}
+                    {/* Sombra 3D projetada proporcional ao andar da peca */}
+                    <div
+                      className="absolute inset-0 rounded-xl bg-black/45"
+                      style={{
+                        transform: `translate(${3 + slot.layer * 2}px, ${4 + slot.layer * 3}px)`,
+                        filter: slot.layer > 1 ? 'blur(1px)' : 'none',
+                      }}
+                    />
 
-                    {slot.layer > 0 && (
-                      <div className="absolute bottom-1 right-1 text-[8px] font-black text-[#8D6E63]/70">
+                    {/* Lateral inferior de marfim/osso (relevo 3D evidente) */}
+                    <div
+                      className="absolute inset-0 rounded-xl bg-[#C8B89E]"
+                      style={{
+                        transform: `translate(${1 + slot.layer * 0.8}px, ${2 + slot.layer * 1.2}px)`,
+                      }}
+                    />
+
+                    {/* Camada verde de jade autentica do Mahjong classico */}
+                    <div
+                      className="absolute inset-0 rounded-xl bg-[#1B5E20] border border-[#0D3B13]"
+                      style={{
+                        transform: `translate(${0.5 + slot.layer * 0.4}px, ${1 + slot.layer * 0.6}px)`,
+                      }}
+                    />
+
+                    {/* Face frontal de porcelana marfim de alto contraste com destaque por andar */}
+                    <div
+                      className={`relative w-full h-full rounded-xl border-2 transition-all flex flex-col ${layerConfig.borderHighlight} ${
+                        isMatching
+                          ? 'bg-gradient-to-br from-yellow-100 via-amber-200 to-emerald-200 border-amber-400 shadow-2xl'
+                          : isSelected
+                            ? 'bg-gradient-to-br from-amber-50 via-yellow-100 to-amber-200 border-amber-400 shadow-2xl'
+                            : isFree
+                              ? slot.layer >= 2
+                                ? 'bg-gradient-to-b from-[#FFFFFF] to-[#F5F2EB]'
+                                : 'bg-[#FFFDF9]'
+                              : 'bg-[#ECE5D8] border-[#BCAAA4]'
+                      }`}
+                    >
+                      {/* Destaque visual do andar no canto superior direito — ultra nitido */}
+                      <div
+                        className={`absolute top-0.5 right-0.5 px-1 py-0.2 rounded text-[7px] font-black uppercase tracking-tighter ${layerConfig.badgeBg} ${layerConfig.badgeText} shadow-xs z-10`}
+                        title={layerConfig.name}
+                      >
                         L{slot.layer + 1}
                       </div>
-                    )}
+
+                      {/* Conteudo da face com icone protagonista */}
+                      {renderTileFace(slot.tile)}
+
+                      {/* Efeito de peca selecionada com check dourado festivo */}
+                      {isSelected && (
+                        <div className="absolute -top-2 -left-2 w-5 h-5 bg-amber-400 border-2 border-white rounded-full flex items-center justify-center text-[10px] text-amber-950 font-black shadow-md animate-bounce">
+                          ✓
+                        </div>
+                      )}
+
+                      {/* Faiscas dinamicas no par casado */}
+                      {isMatching && (
+                        <div className="absolute -top-3 -right-3 text-lg animate-ping">✨</div>
+                      )}
+
+                      {/* Filtro cinza translucido quando a peca esta travada */}
+                      {!isFree && (
+                        <div className="absolute inset-0 rounded-xl bg-black/15 pointer-events-none" />
+                      )}
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
 
           {/* Modal de Vitoria */}
           {isWon && (
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm z-40 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-[#FFF9F0] border-4 border-[#8BC34A] rounded-3xl p-6 sm:p-8 max-w-md w-full text-center shadow-2xl animate-scale-in space-y-4">
                 <div className="w-16 h-16 mx-auto rounded-full bg-amber-100 border-2 border-amber-300 flex items-center justify-center text-3xl shadow-inner animate-bounce">
                   🀄
@@ -1032,7 +1392,7 @@ export default function Mahjong() {
                     Vitoria no Mahjong!
                   </h2>
                   <p className="text-xs sm:text-sm text-[#795548] font-bold mt-1">
-                    Voce encontrou todos os pares no modo{' '}
+                    Voce removeu todas as pecas do modo{' '}
                     <strong>{difficulty === 'easy' ? 'Facil' : 'Classico'}</strong> com clareza
                     mental!
                   </p>
@@ -1096,8 +1456,8 @@ export default function Mahjong() {
               peca por cima dela e se seu lado esquerdo ou direito estiver desimpedido.
             </li>
             <li>
-              <strong>Flores e Estacoes:</strong> Qualquer flor combina com outra flor, e qualquer
-              estacao combina com outra estacao.
+              <strong>Flores e Estacoes:</strong> Qualquer flor combina com outra flor (🌸), e
+              qualquer estacao combina com outra estacao (☀️).
             </li>
             <li>
               <strong>Embaralhar & Dica:</strong> Use "Dica" para localizar pares disponiveis ou
