@@ -95,15 +95,20 @@ export const AuthScreen: React.FC<AuthModalProps> = ({ onSuccess }) => {
       <div className="w-full max-w-md bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-6 sm:p-8 shadow-xl">
         {/* Header Badge */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-[#8BC34A] to-[#689F38] flex items-center justify-center text-white shadow-md animate-bounce">
-            <Sparkles className="w-8 h-8" />
+          <div className="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-[#FFB74D] via-[#8BC34A] to-[#2E7D32] p-0.5 shadow-md transform hover:rotate-6 transition-transform">
+            <div className="w-full h-full rounded-[14px] bg-[#2E7D32] flex items-center justify-center text-white font-black text-3xl tracking-tighter shadow-inner">
+              G
+            </div>
+          </div>
+          <div className="inline-block px-3 py-0.5 rounded-full bg-emerald-100 text-[#2E7D32] text-xs font-black uppercase tracking-wider mb-1.5">
+            Glik Games
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-[#3E2723] tracking-tight">
-            {isRegister ? 'Criar Nova Conta' : 'Entrar no Jogo'}
+            {isRegister ? 'Criar Nova Conta' : 'Entrar no Glik Games'}
           </h1>
           <p className="text-xs sm:text-sm text-[#795548] mt-1 font-bold">
             {isRegister
-              ? 'Comece sua jornada de fazenda e desafios de raciocínio 3D'
+              ? 'Comece sua jornada no Glik Games: fazenda RPG, jogos 3D, cartas e ação!'
               : 'Seu progresso, nível e moedas estão salvos na nuvem'}
           </p>
         </div>

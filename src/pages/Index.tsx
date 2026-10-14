@@ -52,102 +52,136 @@ export default function Index() {
     }
   }
 
-  const games = [
+  interface GameCategory {
+    id: string
+    title: string
+    subtitle: string
+    icon: string
+    badgeColor: string
+    games: Array<{
+      id: string
+      title: string
+      type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong' | 'aeronave' | 'runner'
+      route: string
+      icon: React.ComponentType<{ className?: string }>
+      description: string
+      tags: string[]
+      badgeColor: string
+      actionText: string
+    }>
+  }
+
+  const gameCategories: GameCategory[] = [
     {
-      id: 'mundo',
-      title: 'Mundo RPG Andável',
-      type: 'farm' as const,
-      route: '/mundo',
-      icon: Sparkles,
-      description:
-        'Ande com seu personagem pelos cenários, colete soja no chão, asse pão e atenda clientes da vila para faturar ouro e contratar ajudantes!',
-      tags: ['RPG Andável', 'Soja → Pão', 'Portais Fixos'],
-      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300 font-black',
-      actionText: 'Explorar Mundo RPG',
+      id: 'jogos-3d',
+      title: 'Jogos 3D',
+      subtitle: 'Simulação espacial, raciocínio tridimensional e gestão encantada',
+      icon: '🎲',
+      badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+      games: [
+        {
+          id: 'fazenda',
+          title: 'Fazenda Encantada',
+          type: 'farm',
+          route: '/fazenda',
+          icon: Tractor,
+          description:
+            'Plante, colha soja e trigo, atenda pedidos da vila, asse pães no forno e contrate ajudantes automáticos.',
+          tags: ['Colheita 3D', 'Mercado & Pedidos', 'Trabalhadores'],
+          badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          actionText: 'Ir para a Fazenda',
+        },
+        {
+          id: 'fabrica',
+          title: 'Fábrica de Garrafas',
+          type: 'bottle',
+          route: '/fabrica',
+          icon: FlaskConical,
+          description:
+            'Desafio de lógica e ordenação por cores: transfira líquidos coloridos entre garrafas até separar cada cor.',
+          tags: ['Lógica de Cores', 'Prateleira 3D', 'Water Sort'],
+          badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-300',
+          actionText: 'Jogar Garrafas',
+        },
+        {
+          id: 'tetris',
+          title: 'Tetris 3D',
+          type: 'tetris',
+          route: '/tetris',
+          icon: Layers,
+          description:
+            'Encaixe blocos geométricos na arena 3D com rotação de câmera orbital ou dispute no modo clássico 2D.',
+          tags: ['Arena 3D Orbitável', '2D Clássico', 'Combos'],
+          badgeColor: 'bg-purple-100 text-purple-800 border-purple-300',
+          actionText: 'Jogar Tetris 3D',
+        },
+      ],
     },
     {
-      id: 'aeronave',
-      title: 'Defensor do Céu (Aeronave 2D)',
-      type: 'aeronave' as const,
-      route: '/aeronave',
-      icon: Zap,
-      description:
-        'Pilote a aeronave mágica desviando e destruindo asteroides de pedra, cristal e ouro. Tiros automáticos, 3 vidas e alta recompensa!',
-      tags: ['Ação 2D', 'Shooter', 'Novo!'],
-      badgeColor: 'bg-blue-100 text-blue-900 border-blue-300 font-black',
-      actionText: 'Decolar com a Aeronave',
+      id: 'jogos-carta',
+      title: 'Jogos de Carta',
+      subtitle: 'Estratégia tradicional, memória afiada e paciência mental',
+      icon: '🎴',
+      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+      games: [
+        {
+          id: 'spider',
+          title: 'Paciência Spider',
+          type: 'spider',
+          route: '/spider',
+          icon: Spade,
+          description:
+            'Monte sequências completas K→A organizando 10 colunas em 3 níveis de dificuldade (1, 2 ou 4 naipes).',
+          tags: ['Sequências K→A', '3 Dificuldades', 'Desfazer Ilimitado'],
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          actionText: 'Jogar Spider',
+        },
+        {
+          id: 'mahjong',
+          title: 'Mahjong Solitaire',
+          type: 'mahjong',
+          route: '/mahjong',
+          icon: Brain,
+          description:
+            'Encontre e combine duplas de peças livres com efeito 3D ao tocar, brilho de jade e combos multiplicadores.',
+          tags: ['Duplas de Peças', 'Brilho de Jade', 'Combos Multiplicadores'],
+          badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+          actionText: 'Jogar Mahjong',
+        },
+      ],
     },
     {
-      id: 'runner',
-      title: 'Corrida do Vale (Runner 2D)',
-      type: 'runner' as const,
-      route: '/runner',
-      icon: Sparkles,
-      description:
-        'Endless runner acolhedor: corra pelo vale dourado, salte sobre caixotes e pedras com pulo duplo e colete sojas douradas!',
-      tags: ['Pulo Duplo', 'Endless Runner', 'Novo!'],
-      badgeColor: 'bg-amber-100 text-amber-900 border-amber-300 font-black',
-      actionText: 'Correr no Vale',
-    },
-    {
-      id: 'mahjong',
-      title: 'Mahjong Solitaire Animado',
-      type: 'mahjong' as const,
-      route: '/mahjong',
-      icon: Brain,
-      description:
-        'Estilo Vita Mahjong com peças grandes, elevação 3D ao tocar, brilho de jade e ouro nos pares e combo multiplicador de sequência!',
-      tags: ['Memória', 'Jade & Ouro', 'Combos'],
-      badgeColor: 'bg-emerald-100 text-emerald-900',
-      actionText: 'Jogar Mahjong',
-    },
-    {
-      id: 'fazenda',
-      title: 'Fazenda Encantada 3D',
-      type: 'farm' as const,
-      route: '/fazenda',
-      icon: Tractor,
-      description:
-        'Cultive sementes mágicas (soja, milho, cenoura, trigo), gerencie seu terreno isométrico e atenda pedidos da cidade.',
-      tags: ['Colheita', 'Economia', 'Expansão'],
-      badgeColor: 'bg-emerald-100 text-emerald-800',
-      actionText: 'Ir para a Fazenda',
-    },
-    {
-      id: 'spider',
-      title: 'Paciência Spider',
-      type: 'spider' as const,
-      route: '/spider',
-      icon: Spade,
-      description:
-        'Clássico de 10 colunas e 104 cartas. Organize sequências perfeitas K→A no mesmo naipe (1, 2 ou 4 naipes) com desfazer ilimitado e dicas!',
-      tags: ['Paciência', 'Estratégia', '1/2/4 Naipes'],
-      badgeColor: 'bg-amber-100 text-amber-900',
-      actionText: 'Jogar Spider',
-    },
-    {
-      id: 'fabrica',
-      title: 'Jogo das Garrafas',
-      type: 'bottle' as const,
-      route: '/fabrica',
-      icon: FlaskConical,
-      description:
-        '8 garrafinhas de 6 andares na prateleira: preencha o garrafão com uma única cor e ordene as garrafinhas.',
-      tags: ['Lógica', 'Prateleira 3D', 'Water Sort'],
-      badgeColor: 'bg-cyan-100 text-cyan-800',
-      actionText: 'Jogar Garrafas',
-    },
-    {
-      id: 'tetris',
-      title: 'Tetris • 2D Clássico & 3D',
-      type: 'tetris' as const,
-      route: '/tetris',
-      icon: Layers,
-      description:
-        'Jogue o Tetris tradicional 2D com controles de toque confortáveis ou encare o desafio na arena 3D!',
-      tags: ['2D Clássico', 'Espacial 3D', 'Combos'],
-      badgeColor: 'bg-purple-100 text-purple-800',
-      actionText: 'Jogar Tetris',
+      id: 'jogos-2d-acao',
+      title: 'Jogos 2D de Ação',
+      subtitle: 'Reflexos rápidos, tiros precisos e saltos acrobáticos',
+      icon: '⚡',
+      badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+      games: [
+        {
+          id: 'aeronave',
+          title: 'Defensor do Céu',
+          type: 'aeronave',
+          route: '/aeronave',
+          icon: Zap,
+          description:
+            'Pilote uma aeronave ágil desviando de perigos e atirando em asteroides de pedra, cristal e ouro cósmico.',
+          tags: ['Shooter Aéreo', 'Tiros Automáticos', 'Alta Recompensa'],
+          badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
+          actionText: 'Decolar com Aeronave',
+        },
+        {
+          id: 'runner',
+          title: 'Corrida do Vale',
+          type: 'runner',
+          route: '/runner',
+          icon: Sparkles,
+          description:
+            'Endless runner veloz pelo vale verdejante com pulo duplo para saltar caixas e coletar sojas mágicas.',
+          tags: ['Runner com Pulo Duplo', 'Colete Sojas', 'Ritmo Rápido'],
+          badgeColor: 'bg-orange-100 text-orange-900 border-orange-300',
+          actionText: 'Correr no Vale',
+        },
+      ],
     },
   ]
 
@@ -392,72 +426,107 @@ export default function Index() {
           </div>
         </div>
 
-        {/* Games Grid (3 Playable Games) */}
-        <div>
-          <div className="flex items-center justify-between mb-5">
+        {/* Games Categories (Jogos 3D, Jogos de Carta, Jogos 2D de Ação) */}
+        <div className="space-y-10">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#3E2723]/10 pb-4">
             <div>
-              <h2 className="text-2xl sm:text-3xl font-black text-[#3E2723]">Escolha seu Jogo</h2>
-              <p className="text-xs sm:text-sm text-[#795548] font-bold">
-                Todos os 5 jogos alimentam seu ouro e nível compartilhado.
+              <h2 className="text-2xl sm:text-3xl font-black text-[#3E2723] flex items-center gap-2.5">
+                <span>🎮</span> Catálogo de Jogos por Categoria
+              </h2>
+              <p className="text-xs sm:text-sm text-[#795548] font-bold mt-1">
+                Escolha seu desafio — todo ouro e XP conquistados alimentam seu perfil global.
               </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-[#795548]">
+              <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              7 Jogos Disponíveis
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {games.map((game) => {
-              const Icon = game.icon
-              const isHovered = hoveredGame === game.id
-
-              return (
-                <div
-                  key={game.id}
-                  onMouseEnter={() => setHoveredGame(game.id)}
-                  onMouseLeave={() => setHoveredGame(null)}
-                  className="group bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-200 transform hover:-translate-y-2 flex flex-col justify-between"
-                >
+          {gameCategories.map((category) => (
+            <section key={category.id} className="space-y-4">
+              {/* Category Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b-2 border-[#3E2723]/10">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-2xl">{category.icon}</span>
                   <div>
-                    {/* 3D Animated Preview Canvas */}
-                    <div className="mb-4">
-                      <Game3DPreview type={game.type} isHovered={isHovered} />
-                    </div>
-
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      {game.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className={`text-[10px] font-black px-2.5 py-0.5 rounded-full ${game.badgeColor}`}
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Title */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-[#3E2723]">
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <h3 className="text-xl font-black text-[#3E2723]">{game.title}</h3>
-                    </div>
-
-                    {/* Description */}
-                    <p className="text-xs sm:text-sm text-[#795548] font-bold leading-relaxed mb-6">
-                      {game.description}
-                    </p>
+                    <h3 className="text-xl sm:text-2xl font-black text-[#3E2723] tracking-tight">
+                      {category.title}
+                    </h3>
+                    <p className="text-xs text-[#795548] font-semibold">{category.subtitle}</p>
                   </div>
-
-                  {/* Play CTA Button */}
-                  <Link to={game.route}>
-                    <Button className="w-full bg-[#8BC34A] hover:bg-[#7CB342] text-white font-extrabold text-sm py-5 rounded-2xl shadow-md transition-all group-hover:bg-[#7CB342] flex items-center justify-center gap-2">
-                      <span>{game.actionText}</span>
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </Link>
                 </div>
-              )
-            })}
-          </div>
+                <span
+                  className={`text-[11px] font-black px-3 py-1 rounded-full border self-start sm:self-auto ${category.badgeColor}`}
+                >
+                  {category.games.length} {category.games.length === 1 ? 'jogo' : 'jogos'}
+                </span>
+              </div>
+
+              {/* Cards Grid */}
+              <div
+                className={`grid grid-cols-1 ${
+                  category.games.length === 2
+                    ? 'md:grid-cols-2 max-w-4xl'
+                    : 'md:grid-cols-2 lg:grid-cols-3'
+                } gap-6`}
+              >
+                {category.games.map((game) => {
+                  const Icon = game.icon
+                  const isHovered = hoveredGame === game.id
+
+                  return (
+                    <div
+                      key={game.id}
+                      onMouseEnter={() => setHoveredGame(game.id)}
+                      onMouseLeave={() => setHoveredGame(null)}
+                      className="group bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-5 sm:p-6 shadow-sm hover:shadow-xl transition-all duration-200 transform hover:-translate-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        {/* 3D Animated Preview Canvas */}
+                        <div className="mb-4">
+                          <Game3DPreview type={game.type} isHovered={isHovered} />
+                        </div>
+
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-1.5 mb-3">
+                          {game.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${game.badgeColor}`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Title */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-[#3E2723]">
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <h4 className="text-xl font-black text-[#3E2723]">{game.title}</h4>
+                        </div>
+
+                        {/* Description: 1 sentence short description */}
+                        <p className="text-xs sm:text-sm text-[#795548] font-bold leading-relaxed mb-6">
+                          {game.description}
+                        </p>
+                      </div>
+
+                      {/* Play CTA Button */}
+                      <Link to={game.route}>
+                        <Button className="w-full bg-[#8BC34A] hover:bg-[#7CB342] text-white font-extrabold text-sm py-5 rounded-2xl shadow-md transition-all group-hover:bg-[#7CB342] flex items-center justify-center gap-2">
+                          <span>{game.actionText}</span>
+                          <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          ))}
         </div>
 
         {/* Small tips banner */}

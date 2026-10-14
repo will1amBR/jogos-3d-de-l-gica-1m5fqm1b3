@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="glikGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD54F" />
+      <stop offset="35%" stop-color="#8BC34A" />
+      <stop offset="100%" stop-color="#2E7D32" />
+    </linearGradient>
+    <linearGradient id="innerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2E7D32" />
+      <stop offset="100%" stop-color="#1B5E20" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background Rounded Shield -->
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#glikGrad)" />
+  <rect x="5" y="5" width="54" height="54" rx="13" fill="url(#innerGrad)" stroke="#FFE082" stroke-width="1.5" />
+  
+  <!-- Stylized "G" -->
+  <path d="M42 22 C39 18 33 16 26 18 C18 20 13 27 13 35 C13 43 18 50 27 50 C36 50 41 45 42 38 L30 38 L30 32 L48 32 L48 40 C46 47 38 55 26 55 C14 55 7 45 7 34 C7 23 15 13 27 12 C35 11 43 14 48 20 Z" fill="#FFE082" filter="url(#shadow)" />
+  
+  <!-- Sparkle Accent -->
+  <polygon points="46,13 48,8 50,13 55,15 50,17 48,22 46,17 41,15" fill="#FFF59D" />
+  <circle cx="49" cy="45" r="3" fill="#81C784" />
+</svg>

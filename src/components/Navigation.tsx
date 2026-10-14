@@ -53,15 +53,17 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         {/* Brand / Logo */}
         <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#8BC34A] to-[#689F38] flex items-center justify-center text-white shadow-md transform group-hover:rotate-6 transition-transform">
-            <Sparkles className="w-6 h-6 animate-pulse" />
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB74D] via-[#8BC34A] to-[#2E7D32] p-0.5 shadow-md transform group-hover:rotate-6 transition-transform">
+            <div className="w-full h-full rounded-[14px] bg-[#2E7D32] flex items-center justify-center text-white font-black text-2xl tracking-tighter shadow-inner">
+              G
+            </div>
           </div>
           <div>
             <span className="text-xl sm:text-2xl font-black text-[#3E2723] tracking-tight block">
-              Jogos 3D <span className="text-[#8BC34A]">RPG</span>
+              Glik <span className="text-[#8BC34A]">Games</span>
             </span>
             <span className="text-xs text-[#795548] font-bold hidden sm:block">
-              Fazenda, Lógica & Desafio Mental
+              Jogos 3D, Cartas, Ação & Fazenda RPG
             </span>
           </div>
         </Link>
@@ -209,8 +211,11 @@ export const Footer: React.FC = () => {
     <footer className="mt-auto bg-[#ECE5D8] border-t border-[#3E2723]/10 py-8 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
         <div>
-          <p className="font-extrabold text-[#3E2723] text-sm">
-            🌾 Jogos 3D de Lógica & RPG da Fazenda
+          <p className="font-extrabold text-[#3E2723] text-sm flex items-center justify-center md:justify-start gap-1.5">
+            <span className="w-5 h-5 rounded-md bg-[#2E7D32] text-amber-300 font-black text-xs inline-flex items-center justify-center">
+              G
+            </span>
+            Glik Games • Jogos 3D, Cartas e Lógica
           </p>
           <p className="text-xs text-[#795548] mt-0.5">
             Exercite seu cérebro, colha recompensas e expanda sua fazenda mágica.
@@ -274,7 +279,7 @@ export const Footer: React.FC = () => {
         </div>
 
         <div className="text-xs text-[#795548]/80 font-bold">
-          © {new Date().getFullYear()} Jogos 3D • Progressão Salva
+          © {new Date().getFullYear()} Glik Games • Progressão Salva
         </div>
       </div>
     </footer>

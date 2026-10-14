@@ -1,18 +1,40 @@
 import React from 'react'
-import { Outlet } from 'react-router-dom'
+import { Outlet, useLocation } from 'react-router-dom'
 import { Navbar, Footer } from './Navigation'
 import { LevelUpModal } from './LevelUpModal'
 import { StoryModal } from './StoryModal'
 import { ResourceHUD } from './ResourceHUD'
 import { useGame } from '@/context/GameContext'
 
+/**
+ * Rotas onde o ResourceHUD (moedas, soja, pães, trigo, ajudantes, nível, XP)
+ * faz sentido e deve ser exibido: Fazenda, Mundo RPG, Fábrica de Garrafas, Tetris,
+ * Aeronave, Runner, Melhorias, Jornada, Conquistas, Objetivos.
+ * No Hub ('/') e em cartas ('/spider', '/mahjong') e telas de auth NÃO deve aparecer.
+ */
+const RESOURCE_HUD_ROUTES = new Set([
+  '/fazenda',
+  '/mundo',
+  '/fabrica',
+  '/tetris',
+  '/aeronave',
+  '/runner',
+  '/melhorias',
+  '/jornada',
+  '/conquistas',
+  '/objetivos',
+])
+
 export default function Layout() {
   const { user, player, levelUpModal, closeLevelUpModal, storyModal, closeStoryModal } = useGame()
+  const location = useLocation()
+
+  const shouldShowHUD = user && player && RESOURCE_HUD_ROUTES.has(location.pathname)
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F5F0E8] text-[#3E2723] antialiased selection:bg-[#8BC34A] selection:text-white">
       <Navbar />
-      {user && player && <ResourceHUD />}
+      {shouldShowHUD && <ResourceHUD />}
 
       <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-6 flex flex-col min-h-0">
         <Outlet />
