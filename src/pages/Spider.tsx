@@ -741,7 +741,7 @@ export default function Spider() {
 
   return (
     <AuthGate>
-      <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
+      <div className="space-y-2.5 pb-6 animate-fade-in select-none w-full max-w-full overflow-hidden">
         {/* Header / Navigation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
@@ -822,77 +822,77 @@ export default function Spider() {
         </div>
 
         {/* Dashboard stats & Action Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-2.5">
           {/* Pontos */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Pontuação
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#E65100] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#E65100] tabular-nums">
               {score}
             </span>
           </div>
 
           {/* Movimentos */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Movimentos
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#5E35B1] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#5E35B1] tabular-nums">
               {moves}
             </span>
           </div>
 
           {/* Tempo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Tempo
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#2E7D32] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#2E7D32] tabular-nums">
               {formatTime(elapsedSeconds)}
             </span>
           </div>
 
           {/* Sequências concluídas */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-3 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Sequências
             </span>
             <div className="flex items-center gap-1 mt-0.5">
-              <span className="text-xl sm:text-2xl font-black text-[#D84315] tabular-nums">
+              <span className="text-lg sm:text-2xl font-black text-[#D84315] tabular-nums">
                 {completedRuns.length} / 8
               </span>
-              <Trophy className="w-5 h-5 text-amber-500 fill-amber-300" />
+              <Trophy className="w-4 h-4 text-amber-500 fill-amber-300" />
             </div>
           </div>
 
           {/* Quick Action controls */}
-          <div className="col-span-2 sm:col-span-1 flex items-center gap-2">
+          <div className="col-span-2 sm:col-span-1 md:col-span-1 flex items-center gap-1 sm:gap-1.5">
             <Button
               onClick={handleUndo}
               disabled={history.length === 0 || isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[48px] rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
             >
-              <Undo2 className="w-4 h-4 text-[#5E35B1]" />
+              <Undo2 className="w-3.5 h-3.5 text-[#5E35B1]" />
               <span>Desfazer</span>
             </Button>
             <Button
               onClick={handleHint}
               disabled={isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[48px] rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
             >
-              <Lightbulb className="w-4 h-4 text-amber-600" />
+              <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
               <span>Dica</span>
             </Button>
             <Button
               onClick={() => startNewGame(suitMode)}
               variant="outline"
-              className="h-full min-h-[48px] px-3 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="h-full min-h-[44px] px-2.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
               title="Nova Partida"
             >
-              <RotateCcw className="w-4 h-4 text-[#2E7D32]" />
+              <RotateCcw className="w-3.5 h-3.5 text-[#2E7D32]" />
               <span className="hidden sm:inline">Reiniciar</span>
             </Button>
           </div>

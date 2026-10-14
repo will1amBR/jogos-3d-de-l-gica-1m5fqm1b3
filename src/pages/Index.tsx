@@ -61,7 +61,17 @@ export default function Index() {
     games: Array<{
       id: string
       title: string
-      type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong' | 'aeronave' | 'runner'
+      type:
+        | 'farm'
+        | 'bottle'
+        | 'tetris'
+        | 'spider'
+        | 'mahjong'
+        | 'freecell'
+        | 'paciencia'
+        | 'piramide'
+        | 'aeronave'
+        | 'runner'
       route: string
       icon: React.ComponentType<{ className?: string }>
       description: string
@@ -119,7 +129,7 @@ export default function Index() {
     },
     {
       id: 'jogos-carta',
-      title: 'Jogos de Carta',
+      title: 'Jogos de Carta & Tabuleiro',
       subtitle: 'Estratégia tradicional, memória afiada e paciência mental',
       icon: '🎴',
       badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
@@ -143,10 +153,46 @@ export default function Index() {
           route: '/mahjong',
           icon: Brain,
           description:
-            'Encontre e combine duplas de peças livres com efeito 3D ao tocar, brilho de jade e combos multiplicadores.',
-          tags: ['Duplas de Peças', 'Brilho de Jade', 'Combos Multiplicadores'],
+            'Encontre e combine duplas de peças livres com bandeja de fundação para peças casadas e combos!',
+          tags: ['Duplas Livres', 'Bandeja de Pares', 'Combos Multiplicadores'],
           badgeColor: 'bg-emerald-100 text-emerald-900 border-emerald-300',
           actionText: 'Jogar Mahjong',
+        },
+        {
+          id: 'freecell',
+          title: 'FreeCell Clássico',
+          type: 'freecell',
+          route: '/freecell',
+          icon: Spade,
+          description:
+            '8 colunas abertas, 4 células livres e 4 fundações A→K. Planeje seus supermoves e resolva o tabuleiro!',
+          tags: ['8 Colunas', '4 Células Livres', 'Fundações A→K'],
+          badgeColor: 'bg-teal-100 text-teal-900 border-teal-300',
+          actionText: 'Jogar FreeCell',
+        },
+        {
+          id: 'paciencia',
+          title: 'Paciência Klondike',
+          type: 'paciencia',
+          route: '/paciencia',
+          icon: Spade,
+          description:
+            'O clássico atemporal de cartas: 7 colunas em cascata, compra do estoque e fundações A→K por naipe.',
+          tags: ['Klondike Clássico', '7 Colunas', 'Compra de Estoque'],
+          badgeColor: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+          actionText: 'Jogar Paciência',
+        },
+        {
+          id: 'piramide',
+          title: 'Paciência Pirâmide',
+          type: 'piramide',
+          route: '/piramide',
+          icon: Sparkles,
+          description:
+            'Some pares de cartas abertas que somam 13 para desmontar toda a pirâmide de 28 cartas.',
+          tags: ['Soma 13', 'Rei Sai Sozinho', '28 Cartas'],
+          badgeColor: 'bg-orange-100 text-orange-900 border-orange-300',
+          actionText: 'Jogar Pirâmide',
         },
       ],
     },
@@ -439,7 +485,7 @@ export default function Index() {
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-[#795548]">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              7 Jogos Disponíveis
+              10 Jogos Disponíveis
             </div>
           </div>
 

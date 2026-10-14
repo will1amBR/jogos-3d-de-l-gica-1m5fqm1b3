@@ -502,6 +502,7 @@ export default function Mahjong() {
   const [hintPair, setHintPair] = useState<[string, string] | null>(null)
   const [matchingPairIds, setMatchingPairIds] = useState<string[]>([])
   const [history, setHistory] = useState<BoardSlot[][]>([])
+  const [matchedPairsTray, setMatchedPairsTray] = useState<Array<{ id: string; tile: TileDef }>>([])
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [movesCount, setMovesCount] = useState(0)
   const [combo, setCombo] = useState(1)
@@ -688,6 +689,7 @@ export default function Mahjong() {
       setSelectedSlotId(null)
       setHintPair(null)
       setHistory([])
+      setMatchedPairsTray([])
       setElapsedSeconds(0)
       setMovesCount(0)
       setCombo(1)
@@ -760,6 +762,7 @@ export default function Mahjong() {
     const last = history[history.length - 1]
     setBoardSlots(last)
     setHistory((prev) => prev.slice(0, -1))
+    setMatchedPairsTray((prev) => prev.slice(0, -1))
     setSelectedSlotId(null)
     setHintPair(null)
     playSound('select')
@@ -798,7 +801,7 @@ export default function Mahjong() {
     })
   }
 
-  // Destacar dica
+  // Destacar dica (SEMPRE clicavel: destaca quando houver ou avisa/oferece embaralhar)
   const handleHint = () => {
     if (isWon) return
 
@@ -807,17 +810,17 @@ export default function Mahjong() {
       setHintPair([first.id, second.id])
       playSound('select')
       toast({
-        title: 'Dica Encontrada! 💡',
-        description: `Par de ${first.tile?.subLabel || 'pecas'} destacado em dourado no tabuleiro.`,
+        title: '💡 Dica encontrada!',
+        description: `Par de ${first.tile?.subLabel || 'peças'} destacado em dourado no tabuleiro.`,
         className: 'bg-amber-50 border-amber-300 text-amber-950 font-bold',
       })
     } else {
       playSound('blocked')
       toast({
-        title: 'Nenhum par disponivel!',
+        title: '⚠️ Sem pares livres no momento!',
         description:
-          'Nao ha pares livres no momento. Toque em "Embaralhar" para abrir novas jogadas!',
-        variant: 'destructive',
+          'Não há combinações possíveis nesta posição. Use o botão "Embaralhar" para abrir novas jogadas!',
+        className: 'bg-amber-100 border-2 border-amber-400 text-amber-950 font-black',
       })
     }
   }
@@ -871,6 +874,7 @@ export default function Mahjong() {
       const p1Id = firstSlot.id
       const p2Id = slot.id
       const subLabel = slot.tile.subLabel
+      const matchedTileCopy = { ...slot.tile }
 
       // Combo streak logic: if matched within 4.5 seconds of previous match
       const nowMs = Date.now()
@@ -920,6 +924,11 @@ export default function Mahjong() {
           return nextSlots
         })
 
+        // Acumula par na fundação de pares casados (estilo FreeCell/Spider)
+        setMatchedPairsTray((prev) => [
+          ...prev,
+          { id: `${p1Id}_${Date.now()}`, tile: matchedTileCopy },
+        ])
         setMatchingPairIds((prev) => prev.filter((id) => id !== p1Id && id !== p2Id))
         setMovesCount((m) => m + 1)
       }, 480)
@@ -1049,7 +1058,7 @@ export default function Mahjong() {
 
   return (
     <AuthGate>
-      <div className="space-y-2.5 pb-6 animate-fade-in select-none max-w-full">
+      <div className="space-y-2.5 pb-6 animate-fade-in select-none w-full max-w-full overflow-hidden">
         {/* Navegacao e Cabecalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] border-2 border-[#3E2723]/10 rounded-3xl p-3 sm:p-4 shadow-sm">
           <div className="flex items-center gap-3">
@@ -1115,25 +1124,25 @@ export default function Mahjong() {
           </div>
         </div>
 
-        {/* Estatisticas e Acoes Rapidas */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+        {/* Estatisticas e Acoes Rapidas — flexivel sem cortar nas bordas */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-2.5">
           {/* Pares Restantes */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Pares Restantes
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#D84315] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#D84315] tabular-nums">
               {remainingSlots.length / 2}
             </span>
           </div>
 
           {/* Jogadas Livres */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Jogadas Livres
             </span>
             <span
-              className={`text-xl sm:text-2xl font-black tabular-nums ${
+              className={`text-lg sm:text-2xl font-black tabular-nums ${
                 availablePairs.length > 0 ? 'text-[#2E7D32]' : 'text-red-600'
               }`}
             >
@@ -1142,23 +1151,23 @@ export default function Mahjong() {
           </div>
 
           {/* Tempo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col items-center justify-center text-center shadow-xs">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
             <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
               Tempo
             </span>
-            <span className="text-xl sm:text-2xl font-black text-[#5E35B1] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#5E35B1] tabular-nums">
               {formatTime(elapsedSeconds)}
             </span>
           </div>
 
           {/* Pares Casados & Multiplicador de Combo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs col-span-2 sm:col-span-1 relative overflow-hidden">
+          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs relative overflow-hidden">
             <div className="flex items-center justify-between w-full px-1">
               <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
                 Pares
               </span>
               <span
-                className={`text-[10px] uppercase font-black px-1.5 py-0.5 rounded-full transition-all ${
+                className={`text-[9px] uppercase font-black px-1.5 py-0.2 rounded-full transition-all ${
                   combo > 1
                     ? 'bg-amber-500 text-white animate-pulse'
                     : 'bg-emerald-100 text-emerald-800'
@@ -1167,63 +1176,100 @@ export default function Mahjong() {
                 🔥 {combo}x
               </span>
             </div>
-            <span className="text-xl sm:text-2xl font-black text-[#E65100] tabular-nums">
+            <span className="text-lg sm:text-2xl font-black text-[#E65100] tabular-nums">
               {movesCount}
             </span>
           </div>
 
           {/* Botoes de Acao: Desfazer, Dica, Embaralhar */}
-          <div className="col-span-2 sm:col-span-1 flex items-center gap-1.5">
+          <div className="col-span-2 sm:col-span-1 md:col-span-1 flex items-center gap-1 sm:gap-1.5">
             <Button
               onClick={handleUndo}
               disabled={history.length === 0 || isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[48px] rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
             >
-              <Undo2 className="w-4 h-4 text-[#5E35B1]" />
+              <Undo2 className="w-3.5 h-3.5 text-[#5E35B1]" />
               <span>Desfazer</span>
             </Button>
             <Button
               onClick={handleHint}
-              disabled={isWon || remainingSlots.length === 0}
+              disabled={isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[48px] rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+              title="Ver Dica de Par ou Solução"
             >
-              <Lightbulb className="w-4 h-4 text-amber-600" />
+              <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
               <span>Dica</span>
             </Button>
             <Button
               onClick={handleShuffle}
               disabled={isWon || remainingSlots.length === 0}
               variant="outline"
-              className="flex-1 h-full min-h-[48px] rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-xs text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
               title="Embaralhar Pecas Restantes"
             >
-              <Shuffle className="w-4 h-4 text-[#2E7D32]" />
-              <span>Embaralhar</span>
+              <Shuffle className="w-3.5 h-3.5 text-[#2E7D32]" />
+              <span>Baralhar</span>
             </Button>
           </div>
         </div>
 
-        {/* Legenda visual dos Andares 3D para leitura imediata da profundidade */}
-        <div className="bg-[#FFF9F0] border border-amber-200/70 rounded-2xl px-3 py-1.5 flex items-center justify-between flex-wrap gap-2 text-[11px] font-black text-[#5D4037]">
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-            Andares 3D:
-          </span>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg text-stone-700">
-              <span className="w-2.5 h-2.5 rounded bg-stone-500 inline-block" /> L1 Base
-            </span>
-            <span className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-300 px-2 py-0.5 rounded-lg text-emerald-800">
-              <span className="w-2.5 h-2.5 rounded bg-emerald-600 inline-block" /> L2 Meio
-            </span>
-            <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded-lg text-amber-900">
-              <span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block" /> L3 Alto
-            </span>
-            <span className="inline-flex items-center gap-1 bg-purple-50 border border-purple-300 px-2 py-0.5 rounded-lg text-purple-900">
-              <span className="w-2.5 h-2.5 rounded bg-purple-600 inline-block" /> L4 Topo 👑
-            </span>
+        {/* Fundação / Bandeja de Pares Casados (Estilo FreeCell / Spider) */}
+        <div className="bg-[#FFF9F0] border-2 border-amber-200/90 rounded-2xl px-3 py-2 flex items-center justify-between gap-2 shadow-sm overflow-hidden">
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-7 h-7 rounded-xl bg-amber-100 border border-amber-300 flex items-center justify-center text-sm shadow-inner">
+              ✨
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-black text-[#3E2723] uppercase tracking-wider">
+                  Pares Casados
+                </span>
+                <span className="text-[10px] font-black px-1.5 py-0.2 rounded-full bg-amber-200 text-amber-900">
+                  {matchedPairsTray.length} / {boardSlots.length / 2 || 0}
+                </span>
+              </div>
+              <p className="text-[10px] text-[#795548] font-bold hidden sm:block">
+                Fundação dos pares removidos do tabuleiro
+              </p>
+            </div>
+          </div>
+
+          {/* Slots da Fundação: exibe os últimos pares com animação de encaixe suave */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 px-1 max-w-[65%] sm:max-w-none">
+            {matchedPairsTray.length === 0 ? (
+              <span className="text-[11px] font-extrabold text-[#795548]/70 italic px-2">
+                Nenhum par casado ainda — toque em 2 peças iguais livres!
+              </span>
+            ) : (
+              matchedPairsTray.slice(-8).map((item, idx) => (
+                <div
+                  key={item.id}
+                  className="relative group shrink-0 w-8 h-10 sm:w-9 sm:h-11 rounded-lg bg-gradient-to-br from-amber-50 via-white to-amber-100 border-2 border-amber-400 shadow-sm flex flex-col items-center justify-center p-0.5 animate-mahjong-deal transition-transform hover:scale-110"
+                  title={`${item.tile.subLabel} (Par Casado)`}
+                >
+                  <span
+                    className="text-[8px] font-black leading-none"
+                    style={{ color: item.tile.color }}
+                  >
+                    {item.tile.cornerBadge || item.tile.value}
+                  </span>
+                  <span className="text-sm sm:text-base leading-none">
+                    {item.tile.category === 'character' ? (
+                      <strong className="text-xs font-black" style={{ color: item.tile.color }}>
+                        {item.tile.label}
+                      </strong>
+                    ) : (
+                      item.tile.icon
+                    )}
+                  </span>
+                  {idx === matchedPairsTray.slice(-8).length - 1 && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
 

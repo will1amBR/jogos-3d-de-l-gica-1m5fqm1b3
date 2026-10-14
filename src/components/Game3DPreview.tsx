@@ -1,7 +1,17 @@
 import React, { useEffect, useRef } from 'react'
 
 interface Game3DPreviewProps {
-  type: 'farm' | 'bottle' | 'tetris' | 'spider' | 'mahjong' | 'aeronave' | 'runner'
+  type:
+    | 'farm'
+    | 'bottle'
+    | 'tetris'
+    | 'spider'
+    | 'mahjong'
+    | 'freecell'
+    | 'paciencia'
+    | 'piramide'
+    | 'aeronave'
+    | 'runner'
   isHovered: boolean
 }
 
@@ -525,6 +535,173 @@ export const Game3DPreview: React.FC<Game3DPreviewProps> = ({ type, isHovered })
         ctx.beginPath()
         ctx.arc(0, 0, 48, 0, Math.PI * 2)
         ctx.stroke()
+
+        ctx.restore()
+      } else if (type === 'freecell') {
+        // Draw 3D FreeCell representation: 4 open cells, cascaded cards and foundation Aces
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Green velvet table mat
+        ctx.fillStyle = '#1B5E20'
+        ctx.beginPath()
+        ctx.ellipse(0, 30, 80, 26, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#2E7D32'
+        ctx.lineWidth = 2
+        ctx.stroke()
+
+        // 4 Free cells on top left
+        for (let i = 0; i < 4; i++) {
+          const cxPos = -65 + i * 16
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
+          ctx.strokeRect(cxPos, -55, 13, 18)
+        }
+        // 4 Foundations on top right
+        for (let i = 0; i < 4; i++) {
+          const fxPos = 12 + i * 16
+          ctx.strokeStyle = 'rgba(255, 215, 0, 0.6)'
+          ctx.strokeRect(fxPos, -55, 13, 18)
+        }
+
+        // Floating Ace of Hearts and King of Spades
+        const bob = Math.sin(angle * 2) * 4
+
+        // Card 1: Ace of Hearts
+        ctx.save()
+        ctx.translate(-20, -10 + bob)
+        ctx.rotate(-0.15)
+        ctx.fillStyle = '#FFFFFF'
+        ctx.strokeStyle = '#D32F2F'
+        ctx.lineWidth = 1.5
+        ctx.roundRect(-16, -24, 32, 48, 4)
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = '#D32F2F'
+        ctx.font = 'bold 10px sans-serif'
+        ctx.fillText('A ♥', -12, -12)
+        ctx.font = '18px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('♥', 0, 8)
+        ctx.restore()
+
+        // Card 2: King of Spades
+        ctx.save()
+        ctx.translate(20, -15 - bob)
+        ctx.rotate(0.15)
+        ctx.fillStyle = '#FFFFFF'
+        ctx.strokeStyle = '#212121'
+        ctx.lineWidth = 1.5
+        ctx.roundRect(-16, -24, 32, 48, 4)
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = '#212121'
+        ctx.font = 'bold 10px sans-serif'
+        ctx.fillText('K ♠', -12, -12)
+        ctx.font = '18px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('♠', 0, 8)
+        ctx.restore()
+
+        // FreeCell badge
+        ctx.fillStyle = '#00897B'
+        ctx.font = 'bold 11px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('FREECELL 4x', 0, 48)
+
+        ctx.restore()
+      } else if (type === 'paciencia') {
+        // Draw 3D Klondike: Stock deck + fanned tableau
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Felt
+        ctx.fillStyle = '#1B5E20'
+        ctx.beginPath()
+        ctx.ellipse(0, 32, 82, 28, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Blue Stock Deck
+        const deckBob = Math.sin(angle * 1.5) * 3
+        ctx.fillStyle = '#1565C0'
+        ctx.strokeStyle = '#90CAF9'
+        ctx.lineWidth = 1.5
+        ctx.roundRect(-55, -35 + deckBob, 26, 38, 4)
+        ctx.fill()
+        ctx.stroke()
+        ctx.fillStyle = '#FFFFFF'
+        ctx.font = 'bold 12px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('🂠', -42, -12 + deckBob)
+
+        // Cascading cards
+        const klondikeCards = [
+          { val: '10', suit: '♠', col: '#212121', dy: -25 },
+          { val: '9', suit: '♥', col: '#D32F2F', dy: -10 },
+          { val: '8', suit: '♣', col: '#2E7D32', dy: 5 },
+        ]
+
+        klondikeCards.forEach((c) => {
+          ctx.fillStyle = '#FFFFFF'
+          ctx.strokeStyle = '#BDBDBD'
+          ctx.lineWidth = 1.2
+          ctx.roundRect(5, c.dy, 32, 40, 4)
+          ctx.fill()
+          ctx.stroke()
+          ctx.fillStyle = c.col
+          ctx.font = 'bold 9px sans-serif'
+          ctx.textAlign = 'left'
+          ctx.fillText(`${c.val}${c.suit}`, 9, c.dy + 12)
+        })
+
+        // Foundation Sparkle
+        ctx.fillStyle = '#FFD54F'
+        ctx.font = '14px sans-serif'
+        ctx.fillText('✨', 35, -40)
+
+        ctx.restore()
+      } else if (type === 'piramide') {
+        // Draw 3D Pyramid shape of cards summing to 13
+        ctx.save()
+        ctx.translate(cx, cy - 10)
+
+        // 3 levels of mini cards forming triangle
+        const drawMiniPyrCard = (px: number, py: number, label: string, color: string) => {
+          ctx.fillStyle = '#FFFFFF'
+          ctx.strokeStyle = '#D7CCC8'
+          ctx.lineWidth = 1
+          ctx.roundRect(px - 10, py - 14, 20, 28, 3)
+          ctx.fill()
+          ctx.stroke()
+          ctx.fillStyle = color
+          ctx.font = 'bold 9px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.fillText(label, px, py + 3)
+        }
+
+        const bob = Math.sin(angle * 2.5) * 3
+
+        // Row 0
+        drawMiniPyrCard(0, -28 + bob, 'K', '#D32F2F')
+
+        // Row 1
+        drawMiniPyrCard(-14, 2, 'Q', '#212121')
+        drawMiniPyrCard(14, 2, 'A', '#D32F2F')
+
+        // Row 2
+        drawMiniPyrCard(-28, 32, '7', '#2E7D32')
+        drawMiniPyrCard(0, 32, '6', '#D32F2F')
+        drawMiniPyrCard(28, 32, '10', '#E65100')
+
+        // Sum 13 badge
+        ctx.fillStyle = '#FFB300'
+        ctx.beginPath()
+        ctx.arc(0, 56, 12, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#3E2723'
+        ctx.font = 'bold 10px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('13', 0, 60)
 
         ctx.restore()
       }

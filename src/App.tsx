@@ -15,6 +15,9 @@ import Fabrica from './pages/Fabrica'
 import Tetris from './pages/Tetris'
 import Spider from './pages/Spider'
 import Mahjong from './pages/Mahjong'
+import FreeCell from './pages/FreeCell'
+import Paciencia from './pages/Paciencia'
+import Piramide from './pages/Piramide'
 import Aeronave from './pages/Aeronave'
 import Runner from './pages/Runner'
 import Jornada from './pages/Jornada'
@@ -45,6 +48,9 @@ const App = () => (
             <Route path="/tetris" element={<Tetris />} />
             <Route path="/spider" element={<Spider />} />
             <Route path="/mahjong" element={<Mahjong />} />
+            <Route path="/freecell" element={<FreeCell />} />
+            <Route path="/paciencia" element={<Paciencia />} />
+            <Route path="/piramide" element={<Piramide />} />
             <Route path="/aeronave" element={<Aeronave />} />
             <Route path="/runner" element={<Runner />} />
             <Route path="/jornada" element={<Jornada />} />

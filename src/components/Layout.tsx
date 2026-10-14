@@ -32,11 +32,11 @@ export default function Layout() {
   const shouldShowHUD = user && player && RESOURCE_HUD_ROUTES.has(location.pathname)
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F5F0E8] text-[#3E2723] antialiased selection:bg-[#8BC34A] selection:text-white">
+    <div className="flex flex-col min-h-screen w-full max-w-full overflow-x-hidden bg-[#F5F0E8] text-[#3E2723] antialiased selection:bg-[#8BC34A] selection:text-white">
       <Navbar />
       {shouldShowHUD && <ResourceHUD />}
 
-      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-2 sm:py-6 flex flex-col min-h-0">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-6 flex flex-col min-h-0 overflow-x-hidden">
         <Outlet />
       </main>
 

@@ -38,6 +38,8 @@ export const Navbar: React.FC = () => {
     { name: 'Corrida Runner', path: '/runner', icon: Sparkles },
     { name: 'Mahjong', path: '/mahjong', icon: Sparkles },
     { name: 'Spider', path: '/spider', icon: Spade },
+    { name: 'FreeCell', path: '/freecell', icon: Spade },
+    { name: 'Paciência', path: '/paciencia', icon: Spade },
     { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
     { name: 'Tetris', path: '/tetris', icon: Layers },
     { name: 'Objetivos', path: '/objetivos', icon: Target },
@@ -248,6 +250,18 @@ export const Footer: React.FC = () => {
           <span>•</span>
           <Link to="/spider" className="hover:text-[#8BC34A] transition-colors">
             🕷️ Paciência Spider
+          </Link>
+          <span>•</span>
+          <Link to="/freecell" className="hover:text-[#8BC34A] transition-colors">
+            🃏 FreeCell
+          </Link>
+          <span>•</span>
+          <Link to="/paciencia" className="hover:text-[#8BC34A] transition-colors">
+            ♠️ Paciência Klondike
+          </Link>
+          <span>•</span>
+          <Link to="/piramide" className="hover:text-[#8BC34A] transition-colors">
+            🔺 Paciência Pirâmide
           </Link>
           <span>•</span>
           <Link to="/fabrica" className="hover:text-[#8BC34A] transition-colors">
