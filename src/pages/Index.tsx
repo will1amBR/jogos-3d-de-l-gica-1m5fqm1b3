@@ -70,6 +70,10 @@ export default function Index() {
         | 'freecell'
         | 'paciencia'
         | 'piramide'
+        | 'velha'
+        | 'xadrez'
+        | 'damas'
+        | 'pinball'
         | 'aeronave'
         | 'runner'
       route: string
@@ -194,6 +198,42 @@ export default function Index() {
           badgeColor: 'bg-orange-100 text-orange-900 border-orange-300',
           actionText: 'Jogar Pirâmide',
         },
+        {
+          id: 'velha',
+          title: 'Jogo da Velha',
+          type: 'velha',
+          route: '/velha',
+          icon: Sparkles,
+          description:
+            'Alinhe 3 símbolos em linha contra IA com 3 níveis ou dispute lado a lado com um amigo.',
+          tags: ['2 Jogadores', 'IA Minimax', 'Partidas Rápidas'],
+          badgeColor: 'bg-rose-100 text-rose-900 border-rose-300',
+          actionText: 'Jogar da Velha',
+        },
+        {
+          id: 'xadrez',
+          title: 'Xadrez Estratégico',
+          type: 'xadrez',
+          route: '/xadrez',
+          icon: Award,
+          description:
+            'Partida completa com roque, en passant, IA minimax e peças Unicode grandes e legíveis.',
+          tags: ['Xadrez Completo', 'IA Minimax', 'Alta Recompensa'],
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          actionText: 'Jogar Xadrez',
+        },
+        {
+          id: 'damas',
+          title: 'Damas Brasileiras',
+          type: 'damas',
+          route: '/damas',
+          icon: Coins,
+          description:
+            'Damas com regra oficial brasileira de captura obrigatória pela maioria e dama voadora.',
+          tags: ['Regra Brasileira', 'Captura da Maioria', 'Dama Voadora'],
+          badgeColor: 'bg-red-100 text-red-900 border-red-300',
+          actionText: 'Jogar Damas',
+        },
       ],
     },
     {
@@ -203,6 +243,18 @@ export default function Index() {
       icon: '⚡',
       badgeColor: 'bg-blue-100 text-blue-900 border-blue-300',
       games: [
+        {
+          id: 'pinball',
+          title: 'Pinball 2D Arcade',
+          type: 'pinball',
+          route: '/pinball',
+          icon: Zap,
+          description:
+            'Pinball com física em canvas, flippers ágeis, bumpers reluzentes e conversão de pontos em ouro.',
+          tags: ['Física Canvas', 'Lançador com Mola', 'Flippers de Toque'],
+          badgeColor: 'bg-amber-100 text-amber-900 border-amber-300',
+          actionText: 'Jogar Pinball',
+        },
         {
           id: 'aeronave',
           title: 'Defensor do Céu',
@@ -485,7 +537,7 @@ export default function Index() {
             </div>
             <div className="flex items-center gap-2 text-xs font-bold text-[#795548]">
               <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              10 Jogos Disponíveis
+              14 Jogos Disponíveis
             </div>
           </div>
 

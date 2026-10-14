@@ -18,6 +18,10 @@ import Mahjong from './pages/Mahjong'
 import FreeCell from './pages/FreeCell'
 import Paciencia from './pages/Paciencia'
 import Piramide from './pages/Piramide'
+import Velha from './pages/Velha'
+import Xadrez from './pages/Xadrez'
+import Damas from './pages/Damas'
+import Pinball from './pages/Pinball'
 import Aeronave from './pages/Aeronave'
 import Runner from './pages/Runner'
 import Jornada from './pages/Jornada'
@@ -51,6 +55,10 @@ const App = () => (
             <Route path="/freecell" element={<FreeCell />} />
             <Route path="/paciencia" element={<Paciencia />} />
             <Route path="/piramide" element={<Piramide />} />
+            <Route path="/velha" element={<Velha />} />
+            <Route path="/xadrez" element={<Xadrez />} />
+            <Route path="/damas" element={<Damas />} />
+            <Route path="/pinball" element={<Pinball />} />
             <Route path="/aeronave" element={<Aeronave />} />
             <Route path="/runner" element={<Runner />} />
             <Route path="/jornada" element={<Jornada />} />

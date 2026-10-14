@@ -244,6 +244,22 @@ export const Footer: React.FC = () => {
             🏃 Corrida do Vale
           </Link>
           <span>•</span>
+          <Link to="/pinball" className="hover:text-[#8BC34A] transition-colors">
+            🕹️ Pinball Arcade
+          </Link>
+          <span>•</span>
+          <Link to="/velha" className="hover:text-[#8BC34A] transition-colors">
+            ❌ Jogo da Velha
+          </Link>
+          <span>•</span>
+          <Link to="/xadrez" className="hover:text-[#8BC34A] transition-colors">
+            ♟️ Xadrez
+          </Link>
+          <span>•</span>
+          <Link to="/damas" className="hover:text-[#8BC34A] transition-colors">
+            🔴 Damas Brasileiras
+          </Link>
+          <span>•</span>
           <Link to="/mahjong" className="hover:text-[#8BC34A] transition-colors">
             🀄 Mahjong Solitaire
           </Link>

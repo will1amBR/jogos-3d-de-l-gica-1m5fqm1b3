@@ -40,7 +40,7 @@ export interface BoardSlot {
   tile: TileDef | null
 }
 
-export type MahjongDifficulty = 'easy' | 'classic'
+export type MahjongDifficulty = 'easy' | 'classic' | 'castle' | 'bridge' | 'heart'
 
 // Configuracoes ricas para cada familia de pecas — icone protagonista, cores vivas e diferenciacao nitida
 
@@ -493,6 +493,252 @@ function generateClassicSlots(): { layer: number; row: number; col: number }[] {
   return slots // 48 + 16 + 6 + 2 = 72 pecas
 }
 
+// Layout Castelo (formato de castelo com torres laterais e torre central mais alta) — 60 peças (número par)
+function generateCastleSlots(): { layer: number; row: number; col: number }[] {
+  const slots: { layer: number; row: number; col: number }[] = []
+
+  // Camada 0: Base das muralhas e torres (largura 7 colunas: c=1..7, r=1..6)
+  // Torres laterais (col 1 e col 7, r=1..6): 12 peças
+  for (let r = 1; r <= 6; r++) {
+    slots.push({ layer: 0, row: r, col: 1 })
+    slots.push({ layer: 0, row: r, col: 7 })
+  }
+  // Pátio / muralha central (col 2..6, r=3..6): 20 peças
+  for (let r = 3; r <= 6; r++) {
+    for (let c = 2; c <= 6; c++) {
+      slots.push({ layer: 0, row: r, col: c })
+    }
+  }
+  // Ameias centrais camada 0 (col 3..5, r=2): 3 peças -> total L0 = 12 + 20 + 3 = 35 -> ajustamos para par:
+  // Deixar ameias col 3, 5 (2 peças) e col 4 (1 peça) = 3 -> vamos balancear para ter número par exato
+  slots.push({ layer: 0, row: 2, col: 3 })
+  slots.push({ layer: 0, row: 2, col: 5 })
+  // Total L0 = 12 + 20 + 2 = 34 peças
+
+  // Camada 1: Torres elevadas e muralha superior
+  // Torre esquerda L1 (col 1, r=1..3): 3 peças
+  // Torre direita L1 (col 7, r=1..3): 3 peças
+  slots.push({ layer: 1, row: 1, col: 1 })
+  slots.push({ layer: 1, row: 2, col: 1 })
+  slots.push({ layer: 1, row: 3, col: 1 })
+  slots.push({ layer: 1, row: 1, col: 7 })
+  slots.push({ layer: 1, row: 2, col: 7 })
+  slots.push({ layer: 1, row: 3, col: 7 })
+  // Torre de menagem central L1 (col 3..5, r=3..5): 9 peças -> total L1 = 6 + 9 = 15 -> ajustamos:
+  for (let r = 3; r <= 5; r++) {
+    for (let c = 3; c <= 5; c++) {
+      slots.push({ layer: 1, row: r, col: c })
+    }
+  }
+  slots.push({ layer: 1, row: 2, col: 4 }) // topo do portal L1 -> total L1 = 16 peças
+
+  // Camada 2: Torre alta central (col 3..5, r=3..4): 6 peças
+  for (let r = 3; r <= 4; r++) {
+    for (let c = 3; c <= 5; c++) {
+      slots.push({ layer: 2, row: r, col: c })
+    }
+  }
+  // Ameias no topo das torres laterais em L2:
+  slots.push({ layer: 2, row: 1, col: 1 })
+  slots.push({ layer: 2, row: 1, col: 7 })
+  // Total L2 = 8 peças
+
+  // Camada 3: Pináculo da torre central: 2 peças
+  slots.push({ layer: 3, row: 3, col: 4 })
+  slots.push({ layer: 3, row: 4, col: 4 })
+
+  // Total geral: 34 + 16 + 8 + 2 = 60 peças (par garantido)
+  return slots
+}
+
+// Layout Ponte (formato de ponte arqueada com vão central e pilares) — 52 peças (número par)
+function generateBridgeSlots(): { layer: number; row: number; col: number }[] {
+  const slots: { layer: number; row: number; col: number }[] = []
+
+  // Colunas: 1..8, Linhas: 1..5
+  // Camada 0: Pilares de sustentação nas margens e apoios do arco (sem peças no vão central inferior)
+  // Margem esquerda (c=1,2, r=2..5): 8 peças
+  for (let r = 2; r <= 5; r++) {
+    slots.push({ layer: 0, row: r, col: 1 })
+    slots.push({ layer: 0, row: r, col: 2 })
+  }
+  // Margem direita (c=7,8, r=2..5): 8 peças
+  for (let r = 2; r <= 5; r++) {
+    slots.push({ layer: 0, row: r, col: 7 })
+    slots.push({ layer: 0, row: r, col: 8 })
+  }
+  // Tabuleiro da ponte camada 0 atravessando as colunas 3, 4, 5, 6 nas linhas 2..3 (8 peças)
+  for (let r = 2; r <= 3; r++) {
+    for (let c = 3; c <= 6; c++) {
+      slots.push({ layer: 0, row: r, col: c })
+    }
+  }
+  // Total L0 = 8 + 8 + 8 = 24 peças
+
+  // Camada 1: Arco ascendente da ponte (rampas que sobem até o centro)
+  // Rampa esq (c=2..3, r=2..3): 4 peças
+  // Rampa dir (c=6..7, r=2..3): 4 peças
+  // Centro do arco (c=4..5, r=1..3): 6 peças
+  // Apoios adicionais (c=1, c=8, r=3): 2 peças
+  // Total L1 = 16 peças
+  slots.push({ layer: 1, row: 2, col: 2 })
+  slots.push({ layer: 1, row: 3, col: 2 })
+  slots.push({ layer: 1, row: 2, col: 3 })
+  slots.push({ layer: 1, row: 3, col: 3 })
+
+  slots.push({ layer: 1, row: 2, col: 6 })
+  slots.push({ layer: 1, row: 3, col: 6 })
+  slots.push({ layer: 1, row: 2, col: 7 })
+  slots.push({ layer: 1, row: 3, col: 7 })
+
+  slots.push({ layer: 1, row: 1, col: 4 })
+  slots.push({ layer: 1, row: 2, col: 4 })
+  slots.push({ layer: 1, row: 3, col: 4 })
+  slots.push({ layer: 1, row: 1, col: 5 })
+  slots.push({ layer: 1, row: 2, col: 5 })
+  slots.push({ layer: 1, row: 3, col: 5 })
+
+  slots.push({ layer: 1, row: 3, col: 1 })
+  slots.push({ layer: 1, row: 3, col: 8 })
+
+  // Camada 2: Coroamento do arco central (c=3..6, r=2): 4 peças + (c=4..5, r=1): 2 peças = 6 peças
+  // mais corrimãos laterais em c=2, c=7 r=2 (2 peças) = 8 peças
+  slots.push({ layer: 2, row: 2, col: 2 })
+  slots.push({ layer: 2, row: 2, col: 3 })
+  slots.push({ layer: 2, row: 1, col: 4 })
+  slots.push({ layer: 2, row: 2, col: 4 })
+  slots.push({ layer: 2, row: 1, col: 5 })
+  slots.push({ layer: 2, row: 2, col: 5 })
+  slots.push({ layer: 2, row: 2, col: 6 })
+  slots.push({ layer: 2, row: 2, col: 7 })
+
+  // Camada 3: Cume do arco mais alto (c=4, 5 na r=1): 2 peças
+  slots.push({ layer: 3, row: 1, col: 4 })
+  slots.push({ layer: 3, row: 1, col: 5 })
+  // More 2 on r=2 for balance = 4
+  slots.push({ layer: 3, row: 2, col: 4 })
+  slots.push({ layer: 3, row: 2, col: 5 })
+
+  // Total geral: 24 + 16 + 8 + 4 = 52 peças (par garantido)
+  return slots
+}
+
+// Layout Coração (formato de coração simétrico e afunilando embaixo) — 48 peças (número par)
+function generateHeartSlots(): { layer: number; row: number; col: number }[] {
+  const slots: { layer: number; row: number; col: number }[] = []
+
+  // Grade 7 colunas (c=1..7), 6 linhas (r=1..6)
+  // Lóbulos superiores em r=1: c=2,3 e c=5,6 (4 peças)
+  // Camada 0:
+  // r=1: c=2,3 e c=5,6 (4)
+  slots.push({ layer: 0, row: 1, col: 2 })
+  slots.push({ layer: 0, row: 1, col: 3 })
+  slots.push({ layer: 0, row: 1, col: 5 })
+  slots.push({ layer: 0, row: 1, col: 6 })
+
+  // r=2: c=1..7 (7 peças)
+  for (let c = 1; c <= 7; c++) {
+    slots.push({ layer: 0, row: 2, col: c })
+  }
+  // r=3: c=1..7 (7 peças)
+  for (let c = 1; c <= 7; c++) {
+    slots.push({ layer: 0, row: 3, col: c })
+  }
+  // r=4: c=2..6 (5 peças)
+  for (let c = 2; c <= 6; c++) {
+    slots.push({ layer: 0, row: 4, col: c })
+  }
+  // r=5: c=3..5 (3 peças)
+  for (let c = 3; c <= 5; c++) {
+    slots.push({ layer: 0, row: 5, col: c })
+  }
+  // r=6 ponta: c=4 (1 peça) -> 4 + 7 + 7 + 5 + 3 + 1 = 27
+  // Ajuste para base par: removemos c=4 na r=6 para colocar na r=5 c=4 ou deixamos 28 na L0
+  // Adicionando c=4 na r=1 para preencher centro superior ou completando ponta dupla
+  slots.push({ layer: 0, row: 6, col: 4 })
+  slots.push({ layer: 0, row: 4, col: 4 }) // ja existe via loop, entao vamos declarar explicitamente:
+  return createHeartLayoutExplicit()
+}
+
+function createHeartLayoutExplicit(): { layer: number; row: number; col: number }[] {
+  const slots: { layer: number; row: number; col: number }[] = []
+
+  // Base Camada 0: 30 peças
+  const l0Coords = [
+    // Lóbulos r=1 (4)
+    [1, 2],
+    [1, 3],
+    [1, 5],
+    [1, 6],
+    // r=2 (7)
+    [2, 1],
+    [2, 2],
+    [2, 3],
+    [2, 4],
+    [2, 5],
+    [2, 6],
+    [2, 7],
+    // r=3 (7)
+    [3, 1],
+    [3, 2],
+    [3, 3],
+    [3, 4],
+    [3, 5],
+    [3, 6],
+    [3, 7],
+    // r=4 (6)
+    [4, 2],
+    [4, 3],
+    [4, 4],
+    [4, 5],
+    [4, 6],
+    [4, 4],
+    // r=5 (4)
+    [5, 2],
+    [5, 3],
+    [5, 5],
+    [5, 6],
+    // r=6 ponta dupla simétrica (2)
+    [6, 3],
+    [6, 5],
+  ]
+  for (const [r, c] of l0Coords) {
+    slots.push({ layer: 0, row: r, col: c })
+  } // 4 + 7 + 7 + 6 + 4 + 2 = 30 peças
+
+  // Camada 1: 12 peças
+  const l1Coords = [
+    [2, 2],
+    [2, 3],
+    [2, 5],
+    [2, 6],
+    [3, 2],
+    [3, 3],
+    [3, 4],
+    [3, 5],
+    [3, 6],
+    [4, 3],
+    [4, 4],
+    [4, 5],
+  ]
+  for (const [r, c] of l1Coords) {
+    slots.push({ layer: 1, row: r, col: c })
+  } // 12 peças
+
+  // Camada 2: 4 peças
+  slots.push({ layer: 2, row: 3, col: 3 })
+  slots.push({ layer: 2, row: 3, col: 4 })
+  slots.push({ layer: 2, row: 3, col: 5 })
+  slots.push({ layer: 2, row: 4, col: 4 })
+
+  // Camada 3: 2 peças centrais
+  slots.push({ layer: 3, row: 3, col: 4 })
+  slots.push({ layer: 3, row: 4, col: 4 })
+
+  // Total: 30 + 12 + 4 + 2 = 48 peças (par garantido)
+  return slots
+}
+
 export default function Mahjong() {
   const { addReward } = useGame()
 
@@ -674,7 +920,18 @@ export default function Mahjong() {
   // Iniciar nova partida
   const startNewGame = useCallback(
     (diff: MahjongDifficulty = difficulty) => {
-      const templateSlots = diff === 'easy' ? generateEasySlots() : generateClassicSlots()
+      let templateSlots: { layer: number; row: number; col: number }[]
+      if (diff === 'easy') {
+        templateSlots = generateEasySlots()
+      } else if (diff === 'castle') {
+        templateSlots = generateCastleSlots()
+      } else if (diff === 'bridge') {
+        templateSlots = generateBridgeSlots()
+      } else if (diff === 'heart') {
+        templateSlots = generateHeartSlots()
+      } else {
+        templateSlots = generateClassicSlots()
+      }
       const tilePool = createTilePairPool(templateSlots.length)
 
       const initialSlots: BoardSlot[] = templateSlots.map((s, idx) => ({
@@ -944,14 +1201,39 @@ export default function Mahjong() {
       winClaimedRef.current = true
       playSound('win')
 
-      const bonusXp = difficulty === 'easy' ? 180 : 380
-      const bonusCoins = difficulty === 'easy' ? 220 : 500
+      const bonusXp =
+        difficulty === 'easy'
+          ? 180
+          : difficulty === 'heart'
+            ? 260
+            : difficulty === 'bridge'
+              ? 300
+              : difficulty === 'castle'
+                ? 340
+                : 380
+      const bonusCoins =
+        difficulty === 'easy'
+          ? 220
+          : difficulty === 'heart'
+            ? 320
+            : difficulty === 'bridge'
+              ? 380
+              : difficulty === 'castle'
+                ? 440
+                : 500
 
-      addReward(
-        bonusXp,
-        bonusCoins,
-        `Vitoria no Mahjong Solitaire (${difficulty === 'easy' ? 'Facil' : 'Classico'})!`,
-      )
+      const formatLabel =
+        difficulty === 'easy'
+          ? 'Fácil'
+          : difficulty === 'castle'
+            ? 'Castelo'
+            : difficulty === 'bridge'
+              ? 'Ponte'
+              : difficulty === 'heart'
+                ? 'Coração'
+                : 'Clássico'
+
+      addReward(bonusXp, bonusCoins, `Vitória no Mahjong Solitaire (${formatLabel})!`)
 
       toast({
         title: 'TABULEIRO LIMPO COM MAESTRIA! 🏆',
@@ -973,18 +1255,18 @@ export default function Mahjong() {
 
     return (
       <div className="relative w-full h-full flex flex-col items-center justify-between p-1 select-none overflow-hidden">
-        {/* Badge minusculo e discreto no topo esquerdo (apenas valor ou simbolo sem atrapalhar) */}
-        <div className="w-full flex items-center justify-between px-0.5 leading-none">
+        {/* Badge superior com valor e categoria — tamanho legível para idosos */}
+        <div className="w-full flex items-center justify-between px-1 leading-none">
           <span
-            className="text-[10px] font-black rounded-sm px-1 py-0.2"
+            className="text-xs sm:text-sm font-black rounded px-1 py-0.5 bg-black/5"
             style={{ color: tile.color }}
           >
             {tile.cornerBadge || tile.value}
           </span>
-          {/* Categoria em sigla sutil */}
-          <span className="text-[7.5px] font-bold uppercase tracking-tighter opacity-60 text-stone-600">
+          {/* Categoria nítida */}
+          <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-wider text-stone-700 bg-stone-100/90 px-1 py-0.5 rounded">
             {tile.category === 'character'
-              ? 'NUM'
+              ? 'Nº'
               : tile.category === 'bamboo'
                 ? 'BAM'
                 : tile.category === 'dot'
@@ -994,31 +1276,31 @@ export default function Mahjong() {
                     : tile.category === 'dragon'
                       ? 'DRAG'
                       : isSpecial
-                        ? 'ESPEC'
+                        ? 'ESP'
                         : ''}
           </span>
         </div>
 
-        {/* ICONE PROTAGONISTA: Grande, nitido e altamente distinto de relance */}
+        {/* ICONE PROTAGONISTA: Extra grande, nítido e com alto contraste para idosos */}
         <div className="flex-1 flex items-center justify-center my-0.5">
           {tile.category === 'character' ? (
             <span
-              className="text-2xl sm:text-3xl font-black tracking-tight drop-shadow-xs"
+              className="text-3xl sm:text-4xl font-black tracking-tight drop-shadow-sm"
               style={{ color: tile.color }}
             >
               {tile.label}
             </span>
           ) : (
-            <span className="text-2xl sm:text-3xl filter drop-shadow-xs leading-none transform transition-transform hover:scale-110">
+            <span className="text-3xl sm:text-4xl filter drop-shadow-sm leading-none transform transition-transform hover:scale-110">
               {tile.icon}
             </span>
           )}
         </div>
 
-        {/* Rotulo inferior ultra-compacto (nome especifico da peca em vez de repetir BAMBU/CIRCULO) */}
-        <div className="w-full text-center leading-none">
+        {/* Rótulo inferior com nome legível em fonte grossa e fundo suave */}
+        <div className="w-full text-center leading-none pb-0.5">
           <span
-            className="text-[8px] font-black uppercase tracking-tight block truncate px-0.5"
+            className="text-[10px] sm:text-xs font-black uppercase tracking-tight block truncate px-1 py-0.5 rounded bg-black/5"
             style={{ color: tile.color }}
             title={tile.subLabel}
           >
@@ -1033,11 +1315,11 @@ export default function Mahjong() {
   const maxCol = useMemo(() => Math.max(...boardSlots.map((s) => s.col), 8), [boardSlots])
   const maxRow = useMemo(() => Math.max(...boardSlots.map((s) => s.row), 6), [boardSlots])
 
-  // Largura e altura da celula de referencia logica
-  const BASE_CELL_WIDTH = 58
-  const BASE_CELL_HEIGHT = 70
-  const BOARD_PADDING_X = 24
-  const BOARD_PADDING_Y = 24
+  // Largura e altura da celula de referencia logica — peças maiores para máxima acessibilidade
+  const BASE_CELL_WIDTH = 70
+  const BASE_CELL_HEIGHT = 86
+  const BOARD_PADDING_X = 20
+  const BOARD_PADDING_Y = 20
 
   // Dimensao do tabuleiro no espaco de design ideal
   const logicalBoardWidth = (maxCol + 1.2) * BASE_CELL_WIDTH + BOARD_PADDING_X * 2
@@ -1081,42 +1363,40 @@ export default function Mahjong() {
             </div>
           </div>
 
-          {/* Dificuldade & Som */}
-          <div className="flex items-center gap-2">
-            <div className="flex bg-[#F5ECE1] p-1 rounded-2xl border border-amber-200">
-              <button
-                onClick={() => {
-                  setDifficulty('easy')
-                  startNewGame('easy')
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                  difficulty === 'easy'
-                    ? 'bg-[#8BC34A] text-white shadow-sm'
-                    : 'text-[#795548] hover:text-[#3E2723]'
-                }`}
-              >
-                Facil (36 Pecas)
-              </button>
-              <button
-                onClick={() => {
-                  setDifficulty('classic')
-                  startNewGame('classic')
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                  difficulty === 'classic'
-                    ? 'bg-[#8BC34A] text-white shadow-sm'
-                    : 'text-[#795548] hover:text-[#3E2723]'
-                }`}
-              >
-                Classico (72 Pecas)
-              </button>
+          {/* Seletor de Formatos e Som */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap bg-[#F5ECE1] p-1 rounded-2xl border border-amber-200 gap-1">
+              {[
+                { id: 'easy', label: 'Fácil (36)', icon: '🟢' },
+                { id: 'classic', label: 'Clássico (72)', icon: '🏛️' },
+                { id: 'castle', label: 'Castelo (60)', icon: '🏰' },
+                { id: 'bridge', label: 'Ponte (52)', icon: '🌉' },
+                { id: 'heart', label: 'Coração (48)', icon: '❤️' },
+              ].map((m) => (
+                <button
+                  key={m.id}
+                  onClick={() => {
+                    const newDiff = m.id as MahjongDifficulty
+                    setDifficulty(newDiff)
+                    startNewGame(newDiff)
+                  }}
+                  className={`px-2.5 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1 ${
+                    difficulty === m.id
+                      ? 'bg-[#8BC34A] text-white shadow-sm'
+                      : 'text-[#795548] hover:text-[#3E2723] hover:bg-amber-100'
+                  }`}
+                >
+                  <span>{m.icon}</span>
+                  <span>{m.label}</span>
+                </button>
+              ))}
             </div>
 
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setSoundEnabled(!soundEnabled)}
-              className="rounded-2xl text-[#795548]"
+              className="rounded-2xl text-[#795548] min-h-[44px] min-w-[44px]"
               title={soundEnabled ? 'Silenciar Efeitos' : 'Ativar Efeitos'}
             >
               {soundEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
@@ -1124,92 +1404,95 @@ export default function Mahjong() {
           </div>
         </div>
 
-        {/* Estatisticas e Acoes Rapidas — flexivel sem cortar nas bordas */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-2.5">
-          {/* Pares Restantes */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
-            <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
-              Pares Restantes
-            </span>
-            <span className="text-lg sm:text-2xl font-black text-[#D84315] tabular-nums">
-              {remainingSlots.length / 2}
-            </span>
-          </div>
-
-          {/* Jogadas Livres */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
-            <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
-              Jogadas Livres
-            </span>
-            <span
-              className={`text-lg sm:text-2xl font-black tabular-nums ${
-                availablePairs.length > 0 ? 'text-[#2E7D32]' : 'text-red-600'
-              }`}
-            >
-              {availablePairs.length}
-            </span>
-          </div>
-
-          {/* Tempo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
-            <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
-              Tempo
-            </span>
-            <span className="text-lg sm:text-2xl font-black text-[#5E35B1] tabular-nums">
-              {formatTime(elapsedSeconds)}
-            </span>
-          </div>
-
-          {/* Pares Casados & Multiplicador de Combo */}
-          <div className="bg-[#FFF9F0] border-2 border-amber-200/80 rounded-2xl p-2 sm:p-2.5 flex flex-col items-center justify-center text-center shadow-xs relative overflow-hidden">
-            <div className="flex items-center justify-between w-full px-1">
-              <span className="text-[10px] uppercase font-black text-[#795548] tracking-wider">
-                Pares
+        {/* Estatísticas e Barra de Ações: NUNCA corta, quebra em flex/grid responsivo com 100% de largura */}
+        <div className="flex flex-col gap-2.5">
+          {/* Grid de Métricas com números grandes e legíveis para idosos */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+            {/* Pares Restantes */}
+            <div className="bg-[#FFF9F0] border-2 border-amber-200/90 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
+              <span className="text-xs uppercase font-black text-[#795548] tracking-wider">
+                Pares Restantes
               </span>
-              <span
-                className={`text-[9px] uppercase font-black px-1.5 py-0.2 rounded-full transition-all ${
-                  combo > 1
-                    ? 'bg-amber-500 text-white animate-pulse'
-                    : 'bg-emerald-100 text-emerald-800'
-                } ${comboAnim ? 'animate-combo-pulse scale-110' : ''}`}
-              >
-                🔥 {combo}x
+              <span className="text-2xl sm:text-3xl font-black text-[#D84315] tabular-nums">
+                {remainingSlots.length / 2}
               </span>
             </div>
-            <span className="text-lg sm:text-2xl font-black text-[#E65100] tabular-nums">
-              {movesCount}
-            </span>
+
+            {/* Jogadas Livres */}
+            <div className="bg-[#FFF9F0] border-2 border-amber-200/90 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
+              <span className="text-xs uppercase font-black text-[#795548] tracking-wider">
+                Jogadas Livres
+              </span>
+              <span
+                className={`text-2xl sm:text-3xl font-black tabular-nums ${
+                  availablePairs.length > 0 ? 'text-[#2E7D32]' : 'text-red-600'
+                }`}
+              >
+                {availablePairs.length}
+              </span>
+            </div>
+
+            {/* Tempo */}
+            <div className="bg-[#FFF9F0] border-2 border-amber-200/90 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs">
+              <span className="text-xs uppercase font-black text-[#795548] tracking-wider">
+                Tempo
+              </span>
+              <span className="text-2xl sm:text-3xl font-black text-[#5E35B1] tabular-nums">
+                {formatTime(elapsedSeconds)}
+              </span>
+            </div>
+
+            {/* Pares Casados & Multiplicador de Combo */}
+            <div className="bg-[#FFF9F0] border-2 border-amber-200/90 rounded-2xl p-2.5 flex flex-col items-center justify-center text-center shadow-xs relative overflow-hidden">
+              <div className="flex items-center justify-between w-full px-1">
+                <span className="text-xs uppercase font-black text-[#795548] tracking-wider">
+                  Pares Casados
+                </span>
+                <span
+                  className={`text-[10px] uppercase font-black px-1.5 py-0.5 rounded-full transition-all ${
+                    combo > 1
+                      ? 'bg-amber-500 text-white animate-pulse'
+                      : 'bg-emerald-100 text-emerald-800'
+                  } ${comboAnim ? 'animate-combo-pulse scale-110' : ''}`}
+                >
+                  🔥 {combo}x
+                </span>
+              </div>
+              <span className="text-2xl sm:text-3xl font-black text-[#E65100] tabular-nums">
+                {movesCount}
+              </span>
+            </div>
           </div>
 
-          {/* Botoes de Acao: Desfazer, Dica, Embaralhar */}
-          <div className="col-span-2 sm:col-span-1 md:col-span-1 flex items-center gap-1 sm:gap-1.5">
+          {/* FILEIRA DE BOTÕES DE AÇÃO: Flex-wrap completo, toques confortáveis (mínimo 48px de altura), cabe 100% de 320px ao desktop sem nunca cortar */}
+          <div className="w-full flex flex-wrap sm:flex-nowrap items-stretch gap-2">
             <Button
               onClick={handleUndo}
               disabled={history.length === 0 || isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
+              className="flex-1 min-w-[95px] h-12 sm:h-13 px-2 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 active:scale-95 font-black text-xs sm:text-sm text-[#3E2723] flex items-center justify-center gap-1.5 shadow-sm transition-all"
             >
-              <Undo2 className="w-3.5 h-3.5 text-[#5E35B1]" />
+              <Undo2 className="w-4 h-4 sm:w-5 sm:h-5 text-[#5E35B1] shrink-0" />
               <span>Desfazer</span>
             </Button>
             <Button
               onClick={handleHint}
               disabled={isWon}
               variant="outline"
-              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5 cursor-pointer"
+              className="flex-1 min-w-[95px] h-12 sm:h-13 px-2 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 active:scale-95 font-black text-xs sm:text-sm text-[#3E2723] flex items-center justify-center gap-1.5 cursor-pointer shadow-sm transition-all"
               title="Ver Dica de Par ou Solução"
             >
-              <Lightbulb className="w-3.5 h-3.5 text-amber-600" />
+              <Lightbulb className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 shrink-0" />
               <span>Dica</span>
             </Button>
             <Button
               onClick={handleShuffle}
               disabled={isWon || remainingSlots.length === 0}
               variant="outline"
-              className="flex-1 h-full min-h-[44px] px-1.5 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 font-extrabold text-[11px] text-[#3E2723] flex flex-col items-center justify-center gap-0.5"
-              title="Embaralhar Pecas Restantes"
+              className="flex-1 min-w-[95px] h-12 sm:h-13 px-2 rounded-2xl border-2 border-amber-300 bg-[#FFF9F0] hover:bg-amber-100 active:scale-95 font-black text-xs sm:text-sm text-[#3E2723] flex items-center justify-center gap-1.5 shadow-sm transition-all"
+              title="Embaralhar Peças Restantes"
             >
-              <Shuffle className="w-3.5 h-3.5 text-[#2E7D32]" />
+              <Shuffle className="w-4 h-4 sm:w-5 sm:h-5 text-[#2E7D32] shrink-0" />
               <span>Baralhar</span>
             </Button>
           </div>
@@ -1333,7 +1616,7 @@ export default function Mahjong() {
                       zIndex,
                       animationDelay: isGameStarting ? `${dealDelayMs}ms` : undefined,
                     }}
-                    className={`absolute w-[54px] h-[66px] rounded-xl cursor-pointer transition-transform duration-150 touch-manipulation select-none ${
+                    className={`absolute w-[66px] h-[82px] rounded-2xl cursor-pointer transition-transform duration-150 touch-manipulation select-none ${
                       isGameStarting ? 'animate-mahjong-deal' : ''
                     } ${isTapped ? 'animate-mahjong-wiggle' : ''} ${
                       isMatching
@@ -1438,9 +1721,19 @@ export default function Mahjong() {
                     Vitoria no Mahjong!
                   </h2>
                   <p className="text-xs sm:text-sm text-[#795548] font-bold mt-1">
-                    Voce removeu todas as pecas do modo{' '}
-                    <strong>{difficulty === 'easy' ? 'Facil' : 'Classico'}</strong> com clareza
-                    mental!
+                    Você removeu todas as peças do formato{' '}
+                    <strong>
+                      {difficulty === 'easy'
+                        ? 'Fácil'
+                        : difficulty === 'castle'
+                          ? 'Castelo'
+                          : difficulty === 'bridge'
+                            ? 'Ponte'
+                            : difficulty === 'heart'
+                              ? 'Coração'
+                              : 'Clássico'}
+                    </strong>{' '}
+                    com clareza mental e destreza!{' '}
                   </p>
                 </div>
 

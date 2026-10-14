@@ -10,6 +10,10 @@ interface Game3DPreviewProps {
     | 'freecell'
     | 'paciencia'
     | 'piramide'
+    | 'velha'
+    | 'xadrez'
+    | 'damas'
+    | 'pinball'
     | 'aeronave'
     | 'runner'
   isHovered: boolean
@@ -702,6 +706,204 @@ export const Game3DPreview: React.FC<Game3DPreviewProps> = ({ type, isHovered })
         ctx.font = 'bold 10px sans-serif'
         ctx.textAlign = 'center'
         ctx.fillText('13', 0, 60)
+
+        ctx.restore()
+      } else if (type === 'velha') {
+        // 3D Tic-Tac-Toe preview with animated glowing X and O
+        ctx.save()
+        ctx.translate(cx, cy)
+        const bob = Math.sin(angle * 2) * 4
+
+        // Grid background
+        ctx.strokeStyle = '#8BC34A'
+        ctx.lineWidth = 4
+        ctx.lineCap = 'round'
+
+        // Vertical lines
+        ctx.beginPath()
+        ctx.moveTo(-25, -45)
+        ctx.lineTo(-25, 45)
+        ctx.moveTo(25, -45)
+        ctx.lineTo(25, 45)
+        // Horizontal lines
+        ctx.moveTo(-45, -20)
+        ctx.lineTo(45, -20)
+        ctx.moveTo(-45, 20)
+        ctx.lineTo(45, 20)
+        ctx.stroke()
+
+        // Big animated X
+        ctx.strokeStyle = '#2563EB'
+        ctx.lineWidth = 6
+        ctx.beginPath()
+        ctx.moveTo(-35, -30 + bob)
+        ctx.lineTo(-15, -10 + bob)
+        ctx.moveTo(-15, -30 + bob)
+        ctx.lineTo(-35, -10 + bob)
+        ctx.stroke()
+
+        // Big animated O
+        ctx.strokeStyle = '#E11D48'
+        ctx.beginPath()
+        ctx.arc(0, 0, 14 + Math.sin(angle * 3) * 2, 0, Math.PI * 2)
+        ctx.stroke()
+
+        // Another X
+        ctx.strokeStyle = '#2563EB'
+        ctx.beginPath()
+        ctx.moveTo(15, 10 - bob)
+        ctx.lineTo(35, 30 - bob)
+        ctx.moveTo(35, 10 - bob)
+        ctx.lineTo(15, 30 - bob)
+        ctx.stroke()
+
+        ctx.restore()
+      } else if (type === 'xadrez') {
+        // 3D Isometric Chess Board with King and Knight
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Board base
+        ctx.fillStyle = '#5D4037'
+        ctx.beginPath()
+        ctx.ellipse(0, 32, 70, 24, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Mini checkerboard
+        for (let r = -2; r <= 1; r++) {
+          for (let c = -2; c <= 1; c++) {
+            ctx.fillStyle = (r + c) % 2 === 0 ? '#EEEED2' : '#769656'
+            const px = (c - r) * 16
+            const py = (c + r) * 9
+            ctx.beginPath()
+            ctx.moveTo(px, py - 9)
+            ctx.lineTo(px + 16, py)
+            ctx.lineTo(px, py + 9)
+            ctx.lineTo(px - 16, py)
+            ctx.closePath()
+            ctx.fill()
+          }
+        }
+
+        // Animated White King & Black Knight
+        const bob = Math.sin(angle * 2.5) * 4
+        ctx.font = '36px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+
+        // White King
+        ctx.fillStyle = '#FFFFFF'
+        ctx.shadowColor = 'rgba(0,0,0,0.5)'
+        ctx.shadowBlur = 6
+        ctx.fillText('♔', -16, -14 + bob)
+
+        // Black Knight
+        ctx.fillStyle = '#18181B'
+        ctx.shadowColor = 'rgba(255,255,255,0.4)'
+        ctx.shadowBlur = 4
+        ctx.fillText('♞', 18, -10 - bob)
+        ctx.shadowBlur = 0
+
+        ctx.restore()
+      } else if (type === 'damas') {
+        // 3D Checkers Board with Crowned King
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Board background
+        ctx.fillStyle = '#3E2723'
+        ctx.beginPath()
+        ctx.ellipse(0, 34, 72, 24, 0, 0, Math.PI * 2)
+        ctx.fill()
+
+        // Checkers tokens in 3D
+        const bob = Math.sin(angle * 2) * 3
+
+        // Red Crowned Piece
+        ctx.fillStyle = '#991B1B'
+        ctx.beginPath()
+        ctx.ellipse(-20, -6 + bob, 22, 12, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#DC2626'
+        ctx.beginPath()
+        ctx.ellipse(-20, -12 + bob, 22, 12, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#FEF08A'
+        ctx.lineWidth = 2
+        ctx.stroke()
+        ctx.fillStyle = '#FEF08A'
+        ctx.font = '16px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('👑', -20, -12 + bob)
+
+        // White Piece
+        ctx.fillStyle = '#D6D3D1'
+        ctx.beginPath()
+        ctx.ellipse(22, 4 - bob, 22, 12, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#FAFAF9'
+        ctx.beginPath()
+        ctx.ellipse(22, -2 - bob, 22, 12, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.strokeStyle = '#A8A29E'
+        ctx.stroke()
+
+        ctx.restore()
+      } else if (type === 'pinball') {
+        // 2D/3D Pinball Arcade machine with flashing bumpers and silver ball
+        ctx.save()
+        ctx.translate(cx, cy)
+
+        // Pinball table contour
+        ctx.fillStyle = '#0D2311'
+        ctx.strokeStyle = '#FFD54F'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.roundRect(-50, -65, 100, 130, [25, 25, 8, 8])
+        ctx.fill()
+        ctx.stroke()
+
+        // Bumpers
+        const pulse = Math.sin(angle * 4) * 2
+        const drawMiniBumper = (bx: number, by: number, col: string) => {
+          ctx.beginPath()
+          ctx.arc(bx, by, 11 + pulse, 0, Math.PI * 2)
+          ctx.fillStyle = col
+          ctx.fill()
+          ctx.strokeStyle = '#FFFFFF'
+          ctx.lineWidth = 1.5
+          ctx.stroke()
+        }
+        drawMiniBumper(-20, -25, '#FFB300')
+        drawMiniBumper(20, -25, '#4CAF50')
+        drawMiniBumper(0, 0, '#E91E63')
+
+        // Flippers at bottom
+        ctx.strokeStyle = '#FF9800'
+        ctx.lineWidth = 5
+        ctx.lineCap = 'round'
+        const fAngle = Math.sin(angle * 3) * 0.4
+        ctx.beginPath()
+        ctx.moveTo(-28, 42)
+        ctx.lineTo(-28 + Math.cos(fAngle + 0.3) * 24, 42 + Math.sin(fAngle + 0.3) * 10)
+        ctx.stroke()
+
+        ctx.strokeStyle = '#4CAF50'
+        ctx.beginPath()
+        ctx.moveTo(28, 42)
+        ctx.lineTo(28 - Math.cos(-fAngle + 0.3) * 24, 42 + Math.sin(-fAngle + 0.3) * 10)
+        ctx.stroke()
+
+        // Shiny silver pinball
+        const ballY = -35 + Math.sin(angle * 3.5) * 28
+        ctx.fillStyle = '#FFFFFF'
+        ctx.shadowColor = '#FFD54F'
+        ctx.shadowBlur = 8
+        ctx.beginPath()
+        ctx.arc(Math.cos(angle * 2) * 18, ballY, 6, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.shadowBlur = 0
 
         ctx.restore()
       }
