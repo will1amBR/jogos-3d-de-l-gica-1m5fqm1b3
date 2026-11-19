@@ -9,6 +9,8 @@ import { ScrollToTop } from './components/ScrollToTop'
 
 // Game and Hub Pages
 import Index from './pages/Index'
+import { LandingPage } from './components/LandingPage'
+import { AuthPage } from './pages/AuthPage'
 import Mundo from './pages/Mundo'
 import Fazenda from './pages/Fazenda'
 import Fabrica from './pages/Fabrica'
@@ -46,6 +48,8 @@ const App = () => (
           {/* Main App Layout */}
           <Route element={<Layout />}>
             <Route path="/" element={<Index />} />
+            <Route path="/entrar" element={<AuthPage />} />
+            <Route path="/cadastro" element={<AuthPage isRegister />} />
             <Route path="/mundo" element={<Mundo />} />
             <Route path="/fazenda" element={<Fazenda />} />
             <Route path="/fabrica" element={<Fabrica />} />

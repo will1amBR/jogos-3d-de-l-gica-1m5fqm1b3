@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AuthGate } from '@/components/AuthGate'
+import { LandingPage } from '@/components/LandingPage'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
 import { Game3DPreview } from '@/components/Game3DPreview'
 import { getXpForLevel } from '@/types/game'
@@ -282,6 +283,11 @@ export default function Index() {
       ],
     },
   ]
+
+  // Deslogado: landing page pública enxuta (não o Hub completo)
+  if (!user) {
+    return <LandingPage />
+  }
 
   return (
     <AuthGate>

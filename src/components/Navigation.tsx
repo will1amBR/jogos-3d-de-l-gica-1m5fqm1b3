@@ -92,6 +92,25 @@ export const Navbar: React.FC = () => {
           })}
         </nav>
 
+        {/* Deslogado: CTA de autenticação no topo */}
+        {!user ? (
+          <div className="flex items-center gap-2">
+            <Link to="/entrar" className="hidden sm:block">
+              <Button
+                variant="outline"
+                className="min-h-[44px] px-5 bg-white/70 text-[#2E7D32] border-2 border-[#8BC34A]/70 font-black text-sm rounded-2xl hover:bg-[#E8F5E9] active:scale-95 transition-all"
+              >
+                Entrar
+              </Button>
+            </Link>
+            <Link to="/cadastro">
+              <Button className="min-h-[44px] px-5 bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black text-sm rounded-2xl shadow-sm active:scale-95 transition-all">
+                Criar Conta
+              </Button>
+            </Link>
+          </div>
+        ) : null}
+
         {/* Player Stats & Level Pill */}
         {user && player ? (
           <div className="flex items-center gap-3">
@@ -144,6 +163,18 @@ export const Navbar: React.FC = () => {
             </Button>
           </div>
         ) : null}
+
+        {/* Mobile menu toggle (deslogado) */}
+        {!user && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="lg:hidden text-[#3E2723] rounded-xl"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </Button>
+        )}
       </div>
 
       {/* Mobile Drawer */}
@@ -204,11 +235,53 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Mobile Drawer (deslogado): link de login */}
+      {mobileMenuOpen && !user && (
+        <div className="lg:hidden bg-[#FFF9F0] border-b border-[#3E2723]/10 px-4 pt-3 pb-5 shadow-lg">
+          <Link to="/entrar" onClick={() => setMobileMenuOpen(false)}>
+            <Button
+              variant="outline"
+              className="w-full min-h-[48px] bg-white/70 text-[#2E7D32] border-2 border-[#8BC34A]/70 font-black rounded-2xl"
+            >
+              Entrar
+            </Button>
+          </Link>
+        </div>
+      )}
     </header>
   )
 }
 
 export const Footer: React.FC = () => {
+  const { user } = useGame()
+
+  // Deslogado: rodapé enxuto (marca + link de login), sem paredão de links
+  if (!user) {
+    return (
+      <footer className="mt-auto bg-[#ECE5D8] border-t border-[#3E2723]/10 py-6 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-2 text-center">
+          <p className="font-extrabold text-[#3E2723] text-sm flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-md bg-[#2E7D32] text-amber-300 font-black text-xs inline-flex items-center justify-center">
+              G
+            </span>
+            Glik Games
+          </p>
+          <p className="text-xs text-[#795548] font-bold">
+            Jogos 3D, cartas, tabuleiro e ação — grátis no navegador.
+          </p>
+          <Link
+            to="/entrar"
+            className="text-xs font-black text-[#2E7D32] hover:text-[#8BC34A] transition-colors min-h-[44px] flex items-center"
+          >
+            Já tem conta? Entrar
+          </Link>
+          <p className="text-[11px] text-[#795548]/80">© {new Date().getFullYear()} Glik Games</p>
+        </div>
+      </footer>
+    )
+  }
+
   return (
     <footer className="mt-auto bg-[#ECE5D8] border-t border-[#3E2723]/10 py-8 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
