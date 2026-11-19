@@ -1,16 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ArrowLeft,
-  RotateCcw,
-  Sparkles,
-  Trophy,
-  Volume2,
-  VolumeX,
-  Shield,
-  Zap,
-  HelpCircle,
-} from 'lucide-react'
+import { ArrowLeft, RotateCcw, Sparkles, Volume2, VolumeX, Zap, HelpCircle } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AuthGate } from '@/components/AuthGate'
 import { Button } from '@/components/ui/button'
@@ -23,6 +13,7 @@ interface Projectile {
   vy: number
   radius: number
   color: string
+  hostile?: boolean
 }
 
 interface Asteroid {
@@ -47,6 +38,21 @@ interface Particle {
   radius: number
   alpha: number
   color: string
+}
+
+// Asteroide-mãe (CHEFE): aparece a cada 1000 pontos
+interface Boss {
+  id: number
+  x: number
+  y: number
+  vx: number
+  radius: number
+  hp: number
+  maxHp: number
+  hitFlash: number
+  lastHurtAt: number
+  nextShotAt: number
+  spawnAt: number
 }
 
 export default function Aeronave() {
@@ -153,6 +159,8 @@ export default function Aeronave() {
   const entityIdRef = useRef(1)
   const scoreRef = useRef(0)
   const livesRef = useRef(3)
+  const bossRef = useRef<Boss | null>(null)
+  const nextBossScoreRef = useRef(1000)
 
   // Initialize stars and gentle clouds
   useEffect(() => {
@@ -194,6 +202,8 @@ export default function Aeronave() {
     targetXRef.current = 250
     nextShootRef.current = 0
     nextSpawnRef.current = 0
+    bossRef.current = null
+    nextBossScoreRef.current = 1000
   }
 
   // Handle pointer/touch dragging
@@ -356,11 +366,76 @@ export default function Aeronave() {
           })
         }
 
+        // 4b. CHEFE: Asteroide-Mãe a cada 1000 pontos
+        if (!bossRef.current && scoreRef.current >= nextBossScoreRef.current) {
+          bossRef.current = {
+            id: ++entityIdRef.current,
+            x: w / 2,
+            y: -80,
+            vx: 90,
+            radius: 52,
+            hp: 24,
+            maxHp: 24,
+            hitFlash: 0,
+            lastHurtAt: 0,
+            nextShotAt: time + 900,
+            spawnAt: time,
+          }
+          playSfx('powerup')
+          toast({
+            title: '👾 ASTEROIDE-MÃE DETECTADO!',
+            description: 'Um chefe gigante se aproxima — destrua-o para +300 pontos!',
+            className: 'bg-red-50 border-red-400 text-red-950 font-black',
+          })
+        }
+
         // 5. UPDATE & COLLIDE PROJECTILES
         const activeProjs: Projectile[] = []
         for (const proj of projectilesRef.current) {
           proj.y += proj.vy * dt
           let hit = false
+
+          if (proj.hostile) {
+            // Projéteis hostis do chefe: colisão com a nave
+            const distH = Math.hypot(proj.x - ship.x, proj.y - ship.y)
+            if (distH < proj.radius + 16) {
+              playSfx('hurt')
+              livesRef.current -= 1
+              setLives(livesRef.current)
+              for (let i = 0; i < 14; i++) {
+                particlesRef.current.push({
+                  x: ship.x,
+                  y: ship.y,
+                  vx: (Math.random() - 0.5) * 160,
+                  vy: (Math.random() - 0.5) * 160,
+                  radius: 3,
+                  alpha: 1,
+                  color: '#FF5252',
+                })
+              }
+              if (livesRef.current <= 0) {
+                setIsGameOver(true)
+                setIsPlaying(false)
+                if (scoreRef.current > highScore) {
+                  setHighScore(scoreRef.current)
+                  try {
+                    localStorage.setItem('sky_defender_highscore', String(scoreRef.current))
+                  } catch {
+                    // safe
+                  }
+                }
+                const coinsEarned = Math.max(15, Math.round(scoreRef.current * 0.35))
+                const xpEarned = Math.max(25, Math.round(scoreRef.current * 0.45))
+                addReward(xpEarned, coinsEarned, `Defensor do Céu: ${scoreRef.current} pontos! 🚀`)
+              }
+              hit = true
+            }
+            // Projétil hostil cai fora da tela
+            if (!hit && proj.y < h + 10) {
+              activeProjs.push(proj)
+            }
+            continue
+          }
 
           if (proj.y > -10) {
             // Check collision with asteroids
@@ -382,6 +457,27 @@ export default function Aeronave() {
                   color: proj.color,
                 })
                 break
+              }
+            }
+
+            // Projéteis do jogador atingem o chefe
+            const boss = bossRef.current
+            if (!hit && boss) {
+              const distB = Math.hypot(proj.x - boss.x, proj.y - boss.y)
+              if (distB < proj.radius + boss.radius) {
+                hit = true
+                boss.hp -= 1
+                boss.hitFlash = 0.15
+                playSfx('hit')
+                particlesRef.current.push({
+                  x: proj.x,
+                  y: proj.y,
+                  vx: (Math.random() - 0.5) * 100,
+                  vy: (Math.random() - 0.5) * 100,
+                  radius: 3,
+                  alpha: 1,
+                  color: proj.color,
+                })
               }
             }
           }
@@ -470,6 +566,93 @@ export default function Aeronave() {
           }
         }
         asteroidsRef.current = activeAsteroids
+
+        // 6b. UPDATE CHEFE: desce, oscila, atira e morre
+        const boss = bossRef.current
+        if (boss) {
+          if (boss.y < 130) {
+            boss.y += 60 * dt
+          } else {
+            boss.x += boss.vx * dt
+            if (boss.x < boss.radius + 10) {
+              boss.x = boss.radius + 10
+              boss.vx = Math.abs(boss.vx)
+            } else if (boss.x > w - boss.radius - 10) {
+              boss.x = w - boss.radius - 10
+              boss.vx = -Math.abs(boss.vx)
+            }
+          }
+
+          // Tiro do chefe
+          if (time > boss.nextShotAt) {
+            boss.nextShotAt = time + 700
+            for (const spread of [-60, 0, 60]) {
+              projectilesRef.current.push({
+                id: ++entityIdRef.current,
+                x: boss.x + spread,
+                y: boss.y + boss.radius,
+                vy: 300,
+                radius: 5,
+                color: '#FF5252',
+                hostile: true,
+              })
+            }
+            playSfx('shoot')
+          }
+
+          if (boss.hitFlash > 0) boss.hitFlash -= dt
+
+          // Colisão corpo a corpo com a nave (com invulnerabilidade de 1s)
+          const distBossShip = Math.hypot(boss.x - ship.x, boss.y - ship.y)
+          if (distBossShip < boss.radius + 16 && time - boss.lastHurtAt > 1000) {
+            boss.lastHurtAt = time
+            playSfx('hurt')
+            livesRef.current -= 1
+            setLives(livesRef.current)
+            if (livesRef.current <= 0) {
+              setIsGameOver(true)
+              setIsPlaying(false)
+              if (scoreRef.current > highScore) {
+                setHighScore(scoreRef.current)
+                try {
+                  localStorage.setItem('sky_defender_highscore', String(scoreRef.current))
+                } catch {
+                  // safe
+                }
+              }
+              const coinsEarned = Math.max(15, Math.round(scoreRef.current * 0.35))
+              const xpEarned = Math.max(25, Math.round(scoreRef.current * 0.45))
+              addReward(xpEarned, coinsEarned, `Defensor do Céu: ${scoreRef.current} pontos! 🚀`)
+            }
+          }
+
+          // Chefe destruído
+          if (boss.hp <= 0) {
+            playSfx('explode')
+            scoreRef.current += 300
+            setScore(scoreRef.current)
+            nextBossScoreRef.current = scoreRef.current + 1000
+            for (let i = 0; i < 40; i++) {
+              const ang = Math.random() * Math.PI * 2
+              const spd = 60 + Math.random() * 220
+              particlesRef.current.push({
+                x: boss.x,
+                y: boss.y,
+                vx: Math.cos(ang) * spd,
+                vy: Math.sin(ang) * spd,
+                radius: 2 + Math.random() * 4,
+                alpha: 1,
+                color: i % 2 === 0 ? '#FFD54F' : '#FF5252',
+              })
+            }
+            bossRef.current = null
+            toast({
+              title: '💥 CHEFE DERROTADO! +300 pontos!',
+              description: 'O Asteroide-Mãe explodiu. O próximo chega em 1000 pontos!',
+              className: 'bg-emerald-50 border-emerald-400 text-emerald-950 font-black',
+            })
+          }
+        }
       }
 
       // 7. DRAW PARTICLES
@@ -499,6 +682,44 @@ export default function Aeronave() {
         ctx.fill()
         ctx.fillStyle = '#FFFFFF'
         ctx.fillRect(proj.x - 1, proj.y, 2, 8)
+      }
+
+      // 8b. DRAW BOSS HP BAR + BOSS
+      if (bossRef.current) {
+        const boss = bossRef.current
+        ctx.save()
+        // HP bar
+        const barW = 160
+        const barX = (w - barW) / 2
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'
+        ctx.fillRect(barX - 2, 14, barW + 4, 14)
+        ctx.fillStyle = boss.hitFlash > 0 ? '#FFFFFF' : '#FF5252'
+        ctx.fillRect(barX, 16, barW * Math.max(0, boss.hp / boss.maxHp), 10)
+        ctx.fillStyle = '#FFF'
+        ctx.font = 'bold 9px sans-serif'
+        ctx.textAlign = 'center'
+        ctx.fillText('👾 ASTEROIDE-MÃE', w / 2, 40)
+
+        ctx.translate(boss.x, boss.y)
+        ctx.fillStyle = boss.hitFlash > 0 ? '#FFFFFF' : '#4E342E'
+        ctx.strokeStyle = '#FF7043'
+        ctx.lineWidth = 3
+        ctx.beginPath()
+        ctx.arc(0, 0, boss.radius, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+        // Olhos
+        ctx.fillStyle = '#FFEB3B'
+        ctx.beginPath()
+        ctx.arc(-16, -8, 7, 0, Math.PI * 2)
+        ctx.arc(16, -8, 7, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.fillStyle = '#000'
+        ctx.beginPath()
+        ctx.arc(-16, -8, 3, 0, Math.PI * 2)
+        ctx.arc(16, -8, 3, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
       }
 
       // 9. DRAW ASTEROIDS
@@ -534,9 +755,9 @@ export default function Aeronave() {
       }
 
       // 10. DRAW SHIP (STYLIZED RETRO/FANTASY AIRSHIP)
-      const ship = shipPosRef.current
+      const shipDraw = shipPosRef.current
       ctx.save()
-      ctx.translate(ship.x, ship.y)
+      ctx.translate(shipDraw.x, shipDraw.y)
 
       // Thruster flame
       if (isPlaying && !isGameOver) {
@@ -799,6 +1020,10 @@ export default function Aeronave() {
             <li>
               <strong>Tipos de Asteroides:</strong> Rochas marrons (20 pts), Cristais roxos (40 pts)
               e Minérios Dourados raros (60 pts).
+            </li>
+            <li>
+              <strong>Chefe Asteroide-Mãe:</strong> A cada 1000 pontos um chefe gigante surge e
+              atira — destrua-o para +300 pontos!
             </li>
             <li>
               <strong>Recompensa de Verdade:</strong> Cada partida vencida ou perdida rende ouro e
