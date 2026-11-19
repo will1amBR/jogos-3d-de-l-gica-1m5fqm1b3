@@ -1,255 +1,140 @@
 import React, { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  Sparkles,
-  Tractor,
-  Layers,
-  FlaskConical,
-  Coins,
-  Menu,
-  X,
-  LogOut,
-  Gamepad2,
-  TrendingUp,
-  Spade,
-  Target,
-} from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Coins, LogOut, TrendingUp, Gamepad2, Target } from 'lucide-react'
 import { useGame } from '@/context/GameContext'
 import { AnimatedCounter } from '@/components/AnimatedCounter'
 import { getXpForLevel } from '@/types/game'
 import { Button } from '@/components/ui/button'
+import { NavMenu, HamburgerButton } from '@/components/NavMenu'
 
 export const Navbar: React.FC = () => {
   const { user, player, logout } = useGame()
-  const location = useLocation()
   const navigate = useNavigate()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
 
-  const currentLevel = player?.level || 1
   const currentXp = player?.xp || 0
-  const xpNeeded = getXpForLevel(currentLevel)
+  const xpNeeded = getXpForLevel(player?.level || 1)
   const xpPercent = Math.min(100, Math.round((currentXp / Math.max(1, xpNeeded)) * 100))
 
-  const navLinks = [
-    { name: 'Central do Hub', path: '/', icon: Gamepad2 },
-    { name: 'Mundo RPG', path: '/mundo', icon: Sparkles },
-    { name: 'Fazenda', path: '/fazenda', icon: Tractor },
-    { name: 'Aeronave 2D', path: '/aeronave', icon: Gamepad2 },
-    { name: 'Corrida Runner', path: '/runner', icon: Sparkles },
-    { name: 'Mahjong', path: '/mahjong', icon: Sparkles },
-    { name: 'Spider', path: '/spider', icon: Spade },
-    { name: 'FreeCell', path: '/freecell', icon: Spade },
-    { name: 'Paciência', path: '/paciencia', icon: Spade },
-    { name: 'Garrafas', path: '/fabrica', icon: FlaskConical },
-    { name: 'Tetris', path: '/tetris', icon: Layers },
-    { name: 'Objetivos', path: '/objetivos', icon: Target },
-  ]
-
   const handleLogout = () => {
+    setMenuOpen(false)
     logout()
     navigate('/')
   }
 
+  // Poucos itens essenciais que ficam sempre visíveis no header (desktop e mobile)
+  const essentialLinks = [
+    { name: 'Início', path: '/', icon: Gamepad2 },
+    { name: 'Meus Objetivos', path: '/objetivos', icon: Target },
+  ]
+
   return (
-    <header className="sticky top-0 z-40 bg-[#FFF9F0]/90 backdrop-blur-md border-b border-[#3E2723]/10 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        {/* Brand / Logo */}
-        <Link to="/" className="flex items-center gap-3 group">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB74D] via-[#8BC34A] to-[#2E7D32] p-0.5 shadow-md transform group-hover:rotate-6 transition-transform">
-            <div className="w-full h-full rounded-[14px] bg-[#2E7D32] flex items-center justify-center text-white font-black text-2xl tracking-tighter shadow-inner">
-              G
-            </div>
-          </div>
-          <div>
-            <span className="text-xl sm:text-2xl font-black text-[#3E2723] tracking-tight block">
-              Glik <span className="text-[#8BC34A]">Games</span>
-            </span>
-            <span className="text-xs text-[#795548] font-bold hidden sm:block">
-              Jogos 3D, Cartas, Ação & Fazenda RPG
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-1.5">
-          {navLinks.map((link) => {
-            const Icon = link.icon
-            const isActive = location.pathname === link.path
-            return (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-extrabold transition-all ${
-                  isActive
-                    ? 'bg-[#8BC34A] text-white shadow-sm'
-                    : 'text-[#3E2723] hover:bg-[#8BC34A]/10 hover:text-[#2E7D32]'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {link.name}
-              </Link>
-            )
-          })}
-        </nav>
-
-        {/* Deslogado: CTA de autenticação no topo */}
-        {!user ? (
-          <div className="flex items-center gap-2">
-            <Link to="/entrar" className="hidden sm:block">
-              <Button
-                variant="outline"
-                className="min-h-[44px] px-5 bg-white/70 text-[#2E7D32] border-2 border-[#8BC34A]/70 font-black text-sm rounded-2xl hover:bg-[#E8F5E9] active:scale-95 transition-all"
-              >
-                Entrar
-              </Button>
-            </Link>
-            <Link to="/cadastro">
-              <Button className="min-h-[44px] px-5 bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black text-sm rounded-2xl shadow-sm active:scale-95 transition-all">
-                Criar Conta
-              </Button>
-            </Link>
-          </div>
-        ) : null}
-
-        {/* Player Stats & Level Pill */}
-        {user && player ? (
-          <div className="flex items-center gap-3">
-            {/* Level & XP progress */}
-            <div className="hidden sm:flex flex-col items-end gap-1 min-w-[140px]">
-              <div className="flex items-center justify-between w-full text-xs font-black">
-                <span className="text-[#5E35B1] bg-purple-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" /> Nível {player.level}
-                </span>
-                <span className="text-[#795548] tabular-nums">
-                  {currentXp} / {xpNeeded} XP
-                </span>
-              </div>
-              <div className="w-full h-2 bg-[#E0D8CB] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#8BC34A] to-[#FFB74D] transition-all duration-500 rounded-full"
-                  style={{ width: `${xpPercent}%` }}
-                />
+    <>
+      <header className="sticky top-0 z-40 bg-[#FFF9F0]/90 backdrop-blur-md border-b border-[#3E2723]/10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-3">
+          {/* Brand / Logo */}
+          <Link to="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#FFB74D] via-[#8BC34A] to-[#2E7D32] p-0.5 shadow-md transform group-hover:rotate-6 transition-transform">
+              <div className="w-full h-full rounded-[14px] bg-[#2E7D32] flex items-center justify-center text-white font-black text-2xl tracking-tighter shadow-inner">
+                G
               </div>
             </div>
-
-            {/* Coins Counter */}
-            <div className="flex items-center gap-1.5 bg-[#FFF3E0] border border-[#FFB74D]/60 px-3.5 py-1.5 rounded-2xl shadow-inner text-[#E65100]">
-              <Coins className="w-5 h-5 text-[#FB8C00] fill-[#FFE082]" />
-              <AnimatedCounter
-                value={player.coins || 0}
-                className="text-base font-black text-[#E65100]"
-              />
+            <div>
+              <span className="text-xl sm:text-2xl font-black text-[#3E2723] tracking-tight block">
+                Glik <span className="text-[#8BC34A]">Games</span>
+              </span>
+              <span className="text-xs text-[#795548] font-bold hidden sm:block">
+                Jogos 3D, Cartas, Ação & Fazenda RPG
+              </span>
             </div>
+          </Link>
 
-            {/* Logout button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleLogout}
-              title="Sair da Conta"
-              className="text-[#795548] hover:text-[#D32F2F] hover:bg-red-50 rounded-xl"
-            >
-              <LogOut className="w-5 h-5" />
-            </Button>
-
-            {/* Mobile menu toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="lg:hidden text-[#3E2723] rounded-xl"
-            >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </Button>
-          </div>
-        ) : null}
-
-        {/* Mobile menu toggle (deslogado) */}
-        {!user && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden text-[#3E2723] rounded-xl"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </Button>
-        )}
-      </div>
-
-      {/* Mobile Drawer */}
-      {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#FFF9F0] border-b border-[#3E2723]/10 px-4 pt-3 pb-5 space-y-3 shadow-lg">
-          {/* Mobile Player Level Bar */}
-          {player && (
-            <div className="p-3 bg-[#F5F0E8] rounded-2xl border border-amber-200">
-              <div className="flex items-center justify-between text-xs font-bold mb-1.5">
-                <span className="text-[#5E35B1] font-black">Nível {player.level}</span>
-                <span className="text-[#795548]">
-                  {currentXp} / {xpNeeded} XP ({xpPercent}%)
-                </span>
-              </div>
-              <div className="w-full h-2.5 bg-[#E0D8CB] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-[#8BC34A] to-[#FFB74D] rounded-full"
-                  style={{ width: `${xpPercent}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 gap-1">
-            {navLinks.map((link) => {
-              const Icon = link.icon
-              const isActive = location.pathname === link.path
-              return (
+          {/* Itens essenciais (desktop) */}
+          {user && (
+            <nav className="hidden lg:flex items-center gap-1.5">
+              {essentialLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-base font-extrabold ${
-                    isActive
-                      ? 'bg-[#8BC34A] text-white shadow-sm'
-                      : 'text-[#3E2723] hover:bg-[#8BC34A]/10'
-                  }`}
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-extrabold text-[#3E2723] hover:bg-[#8BC34A]/10 hover:text-[#2E7D32] transition-all"
                 >
-                  <Icon className="w-5 h-5" />
+                  <link.icon className="w-4 h-4" />
                   {link.name}
                 </Link>
-              )
-            })}
-          </div>
+              ))}
+            </nav>
+          )}
 
-          <div className="pt-2 border-t border-[#3E2723]/10 flex items-center justify-between">
-            <span className="text-xs text-[#795548] font-bold">
-              Conta: {user?.email || 'Jogador'}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              className="border-red-200 text-red-600 hover:bg-red-50 text-xs font-bold rounded-xl"
-            >
-              <LogOut className="w-3.5 h-3.5 mr-1" /> Sair
-            </Button>
-          </div>
-        </div>
-      )}
+          {/* Deslogado: CTA de autenticação no topo */}
+          {!user ? (
+            <div className="flex items-center gap-2">
+              <Link to="/entrar" className="hidden sm:block">
+                <Button
+                  variant="outline"
+                  className="min-h-[44px] px-5 bg-white/70 text-[#2E7D32] border-2 border-[#8BC34A]/70 font-black text-sm rounded-2xl hover:bg-[#E8F5E9] active:scale-95 transition-all"
+                >
+                  Entrar
+                </Button>
+              </Link>
+              <Link to="/cadastro">
+                <Button className="min-h-[44px] px-5 bg-[#8BC34A] hover:bg-[#7CB342] text-white font-black text-sm rounded-2xl shadow-sm active:scale-95 transition-all">
+                  Criar Conta
+                </Button>
+              </Link>
+            </div>
+          ) : null}
 
-      {/* Mobile Drawer (deslogado): link de login */}
-      {mobileMenuOpen && !user && (
-        <div className="lg:hidden bg-[#FFF9F0] border-b border-[#3E2723]/10 px-4 pt-3 pb-5 shadow-lg">
-          <Link to="/entrar" onClick={() => setMobileMenuOpen(false)}>
-            <Button
-              variant="outline"
-              className="w-full min-h-[48px] bg-white/70 text-[#2E7D32] border-2 border-[#8BC34A]/70 font-black rounded-2xl"
-            >
-              Entrar
-            </Button>
-          </Link>
+          {/* Player Stats & Level Pill */}
+          {user && player ? (
+            <div className="flex items-center gap-3">
+              {/* Level & XP progress */}
+              <div className="hidden md:flex flex-col items-end gap-1 min-w-[140px]">
+                <div className="flex items-center justify-between w-full text-xs font-black">
+                  <span className="text-[#5E35B1] bg-purple-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <TrendingUp className="w-3 h-3" /> Nível {player.level}
+                  </span>
+                  <span className="text-[#795548] tabular-nums">
+                    {currentXp} / {xpNeeded} XP
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-[#E0D8CB] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#8BC34A] to-[#FFB74D] transition-all duration-500 rounded-full"
+                    style={{ width: `${xpPercent}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Coins Counter */}
+              <div className="flex items-center gap-1.5 bg-[#FFF3E0] border border-[#FFB74D]/60 px-3.5 py-1.5 rounded-2xl shadow-inner text-[#E65100]">
+                <Coins className="w-5 h-5 text-[#FB8C00] fill-[#FFE082]" />
+                <AnimatedCounter
+                  value={player.coins || 0}
+                  className="text-base font-black text-[#E65100]"
+                />
+              </div>
+
+              {/* Logout button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleLogout}
+                title="Sair da Conta"
+                className="hidden sm:inline-flex text-[#795548] hover:text-[#D32F2F] hover:bg-red-50 rounded-xl"
+              >
+                <LogOut className="w-5 h-5" />
+              </Button>
+            </div>
+          ) : null}
+
+          {/* Hamburger (desktop + mobile, logado ou não) */}
+          <HamburgerButton open={menuOpen} onClick={() => setMenuOpen(true)} />
         </div>
-      )}
-    </header>
+      </header>
+
+      {/* Menu deslizante (drawer lateral direito) — compartilhado por desktop e mobile */}
+      <NavMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+    </>
   )
 }
 
