@@ -136,6 +136,7 @@ export default function Pinball() {
   const ballsLeftRef = useRef(3)
   const isGameOverRef = useRef(false)
   const finalRewardClaimedRef = useRef(false)
+  const launchForceRef = useRef(0)
 
   // Inicializa loop e canvas
   useEffect(() => {
@@ -171,6 +172,8 @@ export default function Pinball() {
       // Canal de Lançamento (lado direito)
       { x1: 360, y1: 80, x2: 360, y2: 500 },
       { x1: 325, y1: 120, x2: 325, y2: 480 },
+      // Piso do canal de lançamento (segura a bola sobre a mola)
+      { x1: 325, y1: 480, x2: 360, y2: 480 },
       // Rampa guia superior do canal
       { x1: 325, y1: 120, x2: 345, y2: 90 },
       // Guias inferiores em direção aos flippers
@@ -258,6 +261,15 @@ export default function Pinball() {
         ? rightFlipper.activeAngle
         : rightFlipper.restAngle
       rightFlipper.currentAngle += (targetRight - rightFlipper.currentAngle) * 0.35
+
+      // Impulso do êmbolo: aplica a força guardada se a bola estiver no canal
+      if (launchForceRef.current > 0) {
+        if (ball && ball.x > 325 && ball.y > 300) {
+          ball.vy = -launchForceRef.current
+          playSound('launch')
+        }
+        launchForceRef.current = 0
+      }
 
       // Atualiza bola
       if (ball) {
@@ -531,13 +543,8 @@ export default function Pinball() {
 
   const launchPlunger = () => {
     if (plungerChargeRef.current > 0) {
-      playSound('launch')
-      const power = Math.max(12, (plungerChargeRef.current / 100) * 22)
-      // Dispara a bola se estiver no canal
-      if (canvasRef.current) {
-        // Encontra bola no canal e aplica impulso
-        // A força lança para cima
-      }
+      // Força sempre suficiente para vencer o canal e entrar na mesa
+      launchForceRef.current = 15 + (plungerChargeRef.current / 100) * 8
       plungerChargeRef.current = 0
       setPlungerCharge(0)
       isPlungerChargingRef.current = false

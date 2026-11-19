@@ -359,17 +359,14 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
 
     render()
 
-    const handleMouseMove = (e: MouseEvent) => {
+    // Mapeia coordenadas do cliente -> índice do lote (funciona com mouse E toque)
+    const pickPlotFromClient = (clientX: number, clientY: number): number | null => {
       const rect = canvas.getBoundingClientRect()
-      const clientX = e.clientX - rect.left
-      const clientY = e.clientY - rect.top
-
       const scaleX = canvas.width / rect.width
       const scaleY = canvas.height / rect.height
-      const mx = clientX * scaleX
-      const my = clientY * scaleY
+      const mx = (clientX - rect.left) * scaleX
+      const my = (clientY - rect.top) * scaleY
 
-      let found: number | null = null
       for (let i = 0; i < 24; i++) {
         const row = Math.floor(i / cols)
         const col = i % cols
@@ -379,17 +376,22 @@ export const Farm3DCanvas: React.FC<Farm3DCanvasProps> = ({
         const dy = Math.abs(my - pt.y)
 
         if (dx / (tileW / 2) + dy / (tileH / 2) <= 1) {
-          found = i
-          break
+          return i
         }
       }
-
-      hoveredPlotRef.current = found
+      return null
     }
 
-    const handleClick = () => {
-      if (hoveredPlotRef.current !== null) {
-        onPlotClick(hoveredPlotRef.current)
+    const handleMouseMove = (e: MouseEvent) => {
+      hoveredPlotRef.current = pickPlotFromClient(e.clientX, e.clientY)
+    }
+
+    const handleClick = (e: MouseEvent) => {
+      // Calcula o lote direto do toque/clique (o hover não é confiável no celular)
+      const found = pickPlotFromClient(e.clientX, e.clientY)
+      if (found !== null) {
+        hoveredPlotRef.current = found
+        onPlotClick(found)
       }
     }
 

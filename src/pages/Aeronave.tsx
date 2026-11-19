@@ -159,6 +159,7 @@ export default function Aeronave() {
   const entityIdRef = useRef(1)
   const scoreRef = useRef(0)
   const livesRef = useRef(3)
+  const gameOverHandledRef = useRef(false)
   const bossRef = useRef<Boss | null>(null)
   const nextBossScoreRef = useRef(1000)
 
@@ -193,6 +194,7 @@ export default function Aeronave() {
     scoreRef.current = 0
     setLives(3)
     livesRef.current = 3
+    gameOverHandledRef.current = false
     setIsPlaying(true)
     setIsGameOver(false)
     projectilesRef.current = []
@@ -413,7 +415,8 @@ export default function Aeronave() {
                   color: '#FF5252',
                 })
               }
-              if (livesRef.current <= 0) {
+              if (livesRef.current <= 0 && !gameOverHandledRef.current) {
+                gameOverHandledRef.current = true
                 setIsGameOver(true)
                 setIsPlaying(false)
                 if (scoreRef.current > highScore) {
@@ -541,7 +544,8 @@ export default function Aeronave() {
               })
             }
 
-            if (livesRef.current <= 0) {
+            if (livesRef.current <= 0 && !gameOverHandledRef.current) {
+              gameOverHandledRef.current = true
               setIsGameOver(true)
               setIsPlaying(false)
               // Update high score
@@ -609,7 +613,8 @@ export default function Aeronave() {
             playSfx('hurt')
             livesRef.current -= 1
             setLives(livesRef.current)
-            if (livesRef.current <= 0) {
+            if (livesRef.current <= 0 && !gameOverHandledRef.current) {
+              gameOverHandledRef.current = true
               setIsGameOver(true)
               setIsPlaying(false)
               if (scoreRef.current > highScore) {

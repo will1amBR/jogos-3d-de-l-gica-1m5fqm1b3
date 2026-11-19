@@ -579,29 +579,47 @@ export default function Tetris() {
     render()
 
     // Mouse drag to orbit
-    const handleMouseDown = (e: MouseEvent) => {
+    const handleDragStart = (clientX: number) => {
       isDraggingRef.current = true
-      lastMouseXRef.current = e.clientX
+      lastMouseXRef.current = clientX
     }
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleDragMove = (clientX: number) => {
       if (!isDraggingRef.current) return
-      const dx = e.clientX - lastMouseXRef.current
-      lastMouseXRef.current = e.clientX
+      const dx = clientX - lastMouseXRef.current
+      lastMouseXRef.current = clientX
       orbitAngleRef.current += dx * 0.015
     }
-    const handleMouseUp = () => {
+    const handleDragEnd = () => {
       isDraggingRef.current = false
     }
+
+    // Mouse (desktop) e toque (celular) para orbitar a arena
+    const handleMouseDown = (e: MouseEvent) => handleDragStart(e.clientX)
+    const handleMouseMove = (e: MouseEvent) => handleDragMove(e.clientX)
+    const handleMouseUp = () => handleDragEnd()
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches[0]) handleDragStart(e.touches[0].clientX)
+    }
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches[0]) handleDragMove(e.touches[0].clientX)
+    }
+    const handleTouchEnd = () => handleDragEnd()
 
     canvas.addEventListener('mousedown', handleMouseDown)
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('mouseup', handleMouseUp)
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: true })
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: true })
+    canvas.addEventListener('touchend', handleTouchEnd)
 
     return () => {
       cancelAnimationFrame(animId)
       canvas.removeEventListener('mousedown', handleMouseDown)
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
+      canvas.removeEventListener('touchstart', handleTouchStart)
+      canvas.removeEventListener('touchmove', handleTouchMove)
+      canvas.removeEventListener('touchend', handleTouchEnd)
     }
   }, [gameMode, gameState3D, dropOneStep])
 

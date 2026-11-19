@@ -686,16 +686,16 @@ function createHeartLayoutExplicit(): { layer: number; row: number; col: number 
     [3, 5],
     [3, 6],
     [3, 7],
-    // r=4 (6)
+    // r=4 (5)
     [4, 2],
     [4, 3],
     [4, 4],
     [4, 5],
     [4, 6],
-    [4, 4],
-    // r=5 (4)
+    // r=5 (5)
     [5, 2],
     [5, 3],
+    [5, 4],
     [5, 5],
     [5, 6],
     // r=6 ponta dupla simétrica (2)
